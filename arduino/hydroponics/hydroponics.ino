@@ -11,7 +11,7 @@
 
 #define DHTTYPE DHT22  
 #define PIN_DHT  7     
-#define PIN_EMON 7 
+#define PIN_EMON 4 
 #define HTTP_LINE_BUFFER 128
 #define SWITCHES_COUNT 6
 #define START_SWITCHES 100
@@ -20,10 +20,9 @@
 
 byte _ip[4];
 byte _serverIp[4];
-byte _timeserver[4];
 EthernetServer server = NULL;
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress timeserverIp;
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+
 EthernetUDP Udp;
 JsonReader reader;
 
@@ -33,18 +32,19 @@ byte packetBuffer[NTP_PACKET_SIZE];
 
 char lineBuffer[HTTP_LINE_BUFFER];
 int switchNumber;
+unsigned long currentTimestamp = 0;
 
 byte defaultValues[] = {
   1,                // (00) is configured 
   0,                // (01) enable DHCP
   192, 168, 0, 249, // (02) IP local
   00, 80,           // (06) Port local
-  96, 44, 157, 90,  // (08) Time Server (time.nist.gov)
+  81, 94, 123, 17,  // (08) Time Server (0.ch.pool.ntp.org)
   192, 168, 0, 11,  // (12) Hydroponics Server IP
   0x1f, 0x90,       // (16) Hydroponics Server Port
   2,                // (18) TIMEZONE
   230,              // (19) Voltage
-  0x05, 0xc8        // (20) Irms Factor  
+  0, 4              // (20) Irms Factor  
 };
 
 /* Main Setup */
@@ -68,7 +68,6 @@ void setup() {
   //Setup Server
   getIp();
   serverIp();
-  timeserver();
   IPAddress ip(_ip);
   server = EthernetServer(port());
   Ethernet.begin(mac, ip);
@@ -76,7 +75,6 @@ void setup() {
 
   //Setup NTP Time Sync
   Udp.begin(localPort);
-  timeserverIp = IPAddress(_timeserver);
   setSyncProvider(processSyncMessage);
   setSyncInterval(3600);
 
@@ -88,57 +86,62 @@ void setup() {
 }
 
 void loop() {
-  readValues();
-  if(valuesUpdated()) {
-    int l = jsonCalibre(lineBuffer);
-    pushUpdate(lineBuffer, l);
-//    Serial.print("Values Updated: T:");  
-//    Serial.print(getTemperature());  
-//    Serial.print(", H:");  
-//    Serial.print(getHumidity());  
-//    Serial.print(", I:");  
-//    Serial.println(getCurrent());  
-  }
-  
 
-    //check switches
-    for(int i=0; i<SWITCHES_COUNT; i++) {
-      boolean mode = LOW;
-      if(EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)) == 2) {
-        mode = HIGH;
-      } else if(EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)) == 3) {
-        for(int k=0; k<SWITCHES_TIMERS; k++) {
-          int startHour = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+0);
-          int startMinute = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+1);
-          int startSecond = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+2);
-          int endHour = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+3);
-          int endMinute = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+4);
-          int endSecond = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+5);
-          
-          long start = ((long)startHour*60*60) + ((long)startMinute*60) + (long)startSecond;
-          long end = ((long)endHour*60*60) + ((long)endMinute*60) + (long)endSecond;
-          long secondDay = ((long)hour()*60*60) + ((long)minute()*60) +(long)second();
-          if(start <= secondDay && end >= secondDay) {
-             mode = HIGH;
-          }
+  if(currentTimestamp == 0 || (currentTimestamp + 50000) < millis()) {
+    currentTimestamp = millis();
+    readValues();
+    if(valuesUpdated()) {
+      int l = jsonCalibre(lineBuffer);
+      pushUpdate(lineBuffer, l);
+      Serial.print("Values Updated: T:");  
+      Serial.print(getTemperature());  
+      Serial.print(", H:");  
+      Serial.print(getHumidity());  
+      Serial.print(", I:");  
+      Serial.println(getCurrent());  
+    }
+  }
+
+  //check switches
+  for(int i=0; i<SWITCHES_COUNT; i++) {
+    boolean mode = LOW;
+    if(EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)) == 2) {
+      mode = HIGH;
+    } 
+    else if(EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)) == 3) {
+      for(int k=0; k<SWITCHES_TIMERS; k++) {
+        int startHour = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+0);
+        int startMinute = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+1);
+        int startSecond = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+2);
+        int endHour = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+3);
+        int endMinute = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+4);
+        int endSecond = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+5);
+
+        long start = ((long)startHour*60*60) + ((long)startMinute*60) + (long)startSecond;
+        long end = ((long)endHour*60*60) + ((long)endMinute*60) + (long)endSecond;
+        long secondDay = ((long)hour()*60*60) + ((long)minute()*60) +(long)second();
+        if(start <= secondDay && end >= secondDay) {
+          mode = HIGH;
         }
-      }
-      if(bitRead(PORTD,i) != mode) {
-//        Serial.print("change Switch:");
-//        Serial.print(i);
-//        Serial.print(" to ");
-//        Serial.println(mode);
-        if(mode) {
-          digitalWrite(i, HIGH);
-        } else {
-          digitalWrite(i, LOW);
-        }
-        int l = jsonSwitches(lineBuffer, i);
-        pushUpdate(lineBuffer, l);
       }
     }
-  
-  
+    if(bitRead(PORTD,i) != mode) {
+      //        Serial.print("change Switch:");
+      //        Serial.print(i);
+      //        Serial.print(" to ");
+      //        Serial.println(mode);
+      if(mode) {
+        digitalWrite(i, HIGH);
+      } 
+      else {
+        digitalWrite(i, LOW);
+      }
+      int l = jsonSwitches(lineBuffer, i);
+      pushUpdate(lineBuffer, l);
+    }
+  }
+
+
   EthernetClient client = server.available();
   int linePosition = 0;
   boolean parseBody = false;
@@ -232,9 +235,9 @@ void parseResponse(EthernetClient client, HTTP_METHOD httpMethod, HTTP_REQUEST_U
     else if (httpMethod == PUT && httpUri == CONFIG) {
       parseConfig(lineBuffer, l);
     } 
-//    else if (httpMethod == GET && httpUri == STATUS) {
-//      length = jsonStatus(lineBuffer);
-//    } 
+    //    else if (httpMethod == GET && httpUri == STATUS) {
+    //      length = jsonStatus(lineBuffer);
+    //    } 
     else if (httpMethod == GET && httpUri == CALIBRE) {
       length = jsonCalibre(lineBuffer);
     } 
@@ -268,31 +271,24 @@ void initSensors() {
   //Setup DHT Sensor
   dht.begin();
   //Setup Energy Monitor
-  energyMonitor.current(PIN_EMON, voltage());
-
+  energyMonitor.current(PIN_EMON, 4); // XXX this is the value to config
+}
+void readValues() {
   h = dht.readHumidity();
   t = dht.readTemperature();
   Irms = energyMonitor.calcIrms(iRms());
-  lastSensorUpdate = now();
-}
-void readValues() {
-  if(lastSensorUpdate + 30 < now()) { 
-    h = dht.readHumidity();
-    t = dht.readTemperature();
-    Irms = energyMonitor.calcIrms(iRms());
-    lastSensorUpdate = now();
-  }
 }
 boolean valuesUpdated() {
-  if(t == lastTemp && h == lastHum & Irms == lastIrms) {
-    return false;    
-  } 
-  else {
-    lastTemp = t;
-    lastHum = h;
-    lastIrms = Irms;
-    return true;
-  }
+//  if(t == lastTemp && h == lastHum & Irms == lastIrms) {
+//    return false;    
+//  } 
+//  else {
+//    lastTemp = t;
+//    lastHum = h;
+//    lastIrms = Irms;
+//    return true;
+//  }
+  return true;
 }
 double getCurrent() {
   return Irms;
@@ -320,15 +316,17 @@ void pushUpdate(char* body, int length) {
         client.print(body[i]);
       }
       client.println();
-    } else {
+    } 
+    else {
       Serial.println("connection failed");
     }
-    
+
     if (client.available()) {
       char c = client.read();
       Serial.print(c);
     }
-  } else {
+  } 
+  else {
     Serial.println("server ip not set");
   }
 }
@@ -356,7 +354,8 @@ void parseSwitch(char* buffer, int length) {
       reader.characters(value);
       if(strcmp(actName, "number")  == 0)  {
         switchNumber = atoi(value);
-      } else if(strcmp(actName, "mode")  == 0)  {
+      } 
+      else if(strcmp(actName, "mode")  == 0)  {
         EEPROM.write(START_SWITCHES+((switchNumber-1)*SWITCHES_SIZE), atoi(value));
       } 
     } 
@@ -667,7 +666,7 @@ void serverIp() {
 int serverPort() {
   return int(EEPROM.read(POSITION_SERVER_PORT) << 8) + int(EEPROM.read(POSITION_SERVER_PORT+1));
 }
-void timeserver() {
+void timeserver(byte* _timeserver) {
   _timeserver[0] = EEPROM.read(POSITION_NTP_SERVER);
   _timeserver[1] = EEPROM.read(POSITION_NTP_SERVER+1);
   _timeserver[2] = EEPROM.read(POSITION_NTP_SERVER+2);
@@ -723,29 +722,43 @@ int freeRam () {
  */
 
 time_t processSyncMessage() {
-  sendNTPpacket(timeserverIp); // send an NTP packet to a time server
+  boolean success = false;
+  
+  while(!success) {
+    Serial.println("Get Time from NTP Server...");
+    byte ts[4];
+    timeserver(ts);
+    IPAddress timeserverIp = IPAddress(ts);
 
-  // wait to see if a reply is available
-  delay(1000);  
-  if(Udp.parsePacket()) {  
-    // We've received a packet, read the data from it
-    Udp.read(packetBuffer,NTP_PACKET_SIZE);  // read the packet into the buffer
-
-    //the timestamp starts at byte 40 of the received packet and is four bytes,
-    // or two words, long. First, esxtract the two words:
-
-    unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
-    unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);  
-    // combine the four bytes (two words) into a long integer
-    // this is NTP time (seconds since Jan 1 1900):
-    unsigned long secsSince1900 = highWord << 16 | lowWord;  
-    // now convert NTP time into everyday time:
-    // Unix time starts on Jan 1 1970. In seconds, that's 2208988800:
-    const unsigned long seventyYears = 2208988800UL;     
-    // subtract seventy years:
-    unsigned long epoch = secsSince1900 - seventyYears;  
-    epoch += (timezone() * 60 * 60);
-    return epoch;
+    sendNTPpacket(timeserverIp); // send an NTP packet to a time server
+  
+    // wait to see if a reply is available
+    delay(2000);  
+    int packetSize = Udp.parsePacket();
+    if(packetSize) {
+      // We've received a packet, read the data from it
+      Udp.read(packetBuffer,NTP_PACKET_SIZE);  // read the packet into the buffer
+  
+      //the timestamp starts at byte 40 of the received packet and is four bytes,
+      // or two words, long. First, esxtract the two words:
+  
+      unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
+      unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);  
+      // combine the four bytes (two words) into a long integer
+      // this is NTP time (seconds since Jan 1 1900):
+      unsigned long secsSince1900 = highWord << 16 | lowWord;  
+      // now convert NTP time into everyday time:
+      // Unix time starts on Jan 1 1970. In seconds, that's 2208988800:
+      const unsigned long seventyYears = 2208988800UL;     
+      // subtract seventy years:
+      unsigned long epoch = secsSince1900 - seventyYears;  
+      epoch += (timezone() * 60 * 60);
+      success = true;
+      return epoch;
+    } else {
+      Serial.println("Failed to Parse UDP Response!");
+      delay(5000);
+    }
   }
 }
 // send an NTP request to the time server at the given address 
@@ -770,3 +783,5 @@ unsigned long sendNTPpacket(IPAddress& address) {
   Udp.write(packetBuffer,NTP_PACKET_SIZE);
   Udp.endPacket(); 
 }
+
+
