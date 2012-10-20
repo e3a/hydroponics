@@ -1,0 +1,62 @@
+    ------
+	Humidity and Temperature Sensor
+    ------
+    ------
+    14.04.2012
+
+
+Humidity and Temperature Sensor
+
+  The DHT22 is a basic, low-cost digital temperature and humidity sensor. It uses a capacitive humidity sensor and a thermistor
+  to measure the surrounding air, and spits out a digital signal on the data pin (no analog input pins needed). Its fairly
+  simple to use, but requires careful timing to grab data. The only real downside of this sensor is you can only get new data
+  from it once every 2 seconds, so when using our library, sensor readings can be up to 2 seconds old. \[{{1}}\]
+
+[./images/dht22.jpg] CT Sensor
+
+Circuit
+
+[./images/dht22.png] DHT 22
+
+ <<DHT22>> Temperature/Humidity Sensor.
+
+ <<R1>> Resistor 10 K\u03A9.
+
+
+Arduino Sketch
+
+ 1) Download EmonLib from github and place in your arduino libraries folder.
+
+ Download: {{{https://github.com/openenergymonitor/EmonLib}EmonLib}}
+
+ 2) Upload the current only example:
+
+--------------------------
+#include "EmonLib.h"                   // Include Emon Library
+EnergyMonitor emon1;                   // Create an instance
+
+void setup()
+{
+  Serial.begin(9600);
+
+  emon1.current(1, 111.1);             // Current: input pin, calibration.
+}
+
+void loop()
+{
+  double Irms = emon1.calcIrms(1480);  // Calculate Irms only
+
+  Serial.print(Irms*230.0);	       // Apparent power
+  Serial.print(" ");
+  Serial.println(Irms);		       // Irms
+}
+--------------------------
+
+Resources
+
+  [[1]] {1} {{{http://www.seeedstudio.com/wiki/index.php?title=Non-invasive_AC_current_sensor_(100A_max)}Product Site}}
+
+  [[2]] {2} {{{http://openenergymonitor.org/emon/buildingblocks/ct-sensors-introduction}Reference project}}
+
+
+

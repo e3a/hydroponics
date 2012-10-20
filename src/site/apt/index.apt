@@ -1,0 +1,51 @@
+    ------
+	Hydroponics
+    ------
+    ------
+    13.04.2012
+
+
+About
+
+  Hydroponics is a system for controlling an indoor grow of any kind.
+
+
+Installation
+
+  This section describes the <<Hydroponics>> compilation and installation.
+
+  Get the compiled war: {{{https://192.168.1.2/maven/2/org/teklib/org.teklib.www/1.0.0/org.teklib.www-1.0.0.war} org.teklib.www-1.0.0.war}}
+
+* build the project from source
+
+---------------------------
+mvn install
+---------------------------
+
+* Install the project
+
+  copy the war archive to $TOMCAT_HOME/webapp/Hydroponics.war
+
+  copy the database jdbc driver to $TOMCAT_HOME/lib
+
+---------------------------
+cp mysql-connector-java-5.1.6.jar $TOMCAT_HOME/lib
+---------------------------
+
+TODO  edit the $TOMCAT_HOME/conf/server.xml
+
+---------------------------
+TODO <GlobalNamingResources>
+TODO    <Resource
+TODO      name="jdbc/teklib"
+TODO      type="javax.sql.DataSource"
+TODO      maxActive="4"
+TODO      maxIdle="2"
+TODO      username="username"
+TODO      maxWait="5000"
+TODO      validationQuery="select 1"
+TODO      driverClassName="com.mysql.jdbc.Driver"
+TODO      password="password"
+TODO      url="jdbc:mysql://127.0.0.1/teklib"/>
+TODO </GlobalNamingResources>
+----------------------------

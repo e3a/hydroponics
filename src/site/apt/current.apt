@@ -1,0 +1,70 @@
+    ------
+	Non-invasive AC current sensor
+    ------
+    ------
+    13.04.2012
+
+
+Non-invasive AC current sensor
+
+  Non-invasive current transformer, use this sensor clip to build an Energy Monitor. \[{{1}}\]
+
+[./images/current100a.jpg] CT Sensor
+
+Circuit
+
+[./images/current sensor.png] CT Sensor
+
+ <<CT Sensor>> SCT-013-000
+
+ <<R1>> Burden resistor 18 \u03A9 if supply voltage is 3.3V or 33 Ohms if supply voltage is 5V. \*
+
+ <<R2>> 10k \u03A9 resistors (or any equal valued resistor pair upto 470k \u03A9)
+
+ <<C1>> 10uF capacitor
+
+
+ \*Calculate the burden resistor \[{{2}}\]
+
+--------------------------
+ The fuse for an electrical plug is 10A.
+
+ Primary peak-current = RMS current x sqrt(2) = 10A x 1.414 = 14.14A
+ Secondary peak-current = Primary peak-current / no. of turns = 14.14A / 2000 = 0.00707A
+ Ideal burden resistance = (AREF/2) / Secondary peak-current = 2.5V / 0.00707A = 353.60678925 Ohms (330 Ohms)
+--------------------------
+
+Arduino Sketch
+
+ 1) Download EmonLib from github and place in your arduino libraries folder.
+
+ Download: {{{https://github.com/openenergymonitor/EmonLib}EmonLib}}
+
+ 2) Upload the current only example:
+
+--------------------------
+#include "EmonLib.h"                   // Include Emon Library
+EnergyMonitor emon1;                   // Create an instance
+
+void setup()
+{
+  Serial.begin(9600);
+
+  emon1.current(1, 111.1);             // Current: input pin, calibration.
+}
+
+void loop()
+{
+  double Irms = emon1.calcIrms(1480);  // Calculate Irms only
+
+  Serial.print(Irms*230.0);	       // Apparent power
+  Serial.print(" ");
+  Serial.println(Irms);		       // Irms
+}
+--------------------------
+
+Resources
+
+  <<{1}>> {{{http://www.seeedstudio.com/wiki/index.php?title=Non-invasive_AC_current_sensor_(100A_max)}Product Site}}
+
+  <<{2}>> {{{http://openenergymonitor.org/emon/buildingblocks/ct-sensors-introduction}Reference project}}
