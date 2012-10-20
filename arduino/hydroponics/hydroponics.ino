@@ -1,3 +1,30 @@
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
+/* ------------------------------------------------------------------------------
+ * Hydroponics Controller Arduino Sketch
+ * 
+ * This Sketch is controlling your 
+ * 
+ * Author: e3a
+ * Date: October 2012
+ * Version: 1.0
+ *
+ * Changes:
+ * 
+ * ------------------------------------------------------------------------------
+ */
 #include <SPI.h>         
 #include <Ethernet.h>
 #include <EthernetUdp.h>
@@ -19,7 +46,6 @@
 #define SWITCHES_TIMERS 2
 
 byte _ip[4];
-byte _serverIp[4];
 EthernetServer server = NULL;
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
@@ -67,7 +93,6 @@ void setup() {
 
   //Setup Server
   getIp();
-  serverIp();
   IPAddress ip(_ip);
   server = EthernetServer(port());
   Ethernet.begin(mac, ip);
@@ -136,7 +161,7 @@ void loop() {
       else {
         digitalWrite(i, LOW);
       }
-      int l = jsonSwitches(lineBuffer, i);
+      int l = jsonSwitch(lineBuffer, i);
       pushUpdate(lineBuffer, l);
     }
   }
@@ -177,23 +202,19 @@ void loop() {
             else if (strstr_P(lineBuffer, PSTR("GET /status")) != 0) {
               httpMethod = GET; 
               httpUri = STATUS;
-            } 
-            else if (strstr_P(lineBuffer, PSTR("GET /calibre")) != 0) {
+            } else if (strstr_P(lineBuffer, PSTR("GET /calibre")) != 0) {
               httpMethod = GET; 
               httpUri = CALIBRE;
-            } 
-            else if (strstr_P(lineBuffer, PSTR("GET /schedule")) != 0) {
-              httpMethod = GET; 
-              httpUri = SCHEDULE;
-            } 
-            else if (strstr_P(lineBuffer, PSTR("GET /switch/")) != 0) {
+            } else if (strstr_P(lineBuffer, PSTR("GET /switch/")) != 0) {
               httpMethod = GET; 
               httpUri = SWITCH;
               switchNumber = lineBuffer[12]-'0';
-            } 
-            else if (strstr_P(lineBuffer, PSTR("PUT /switch")) != 0) {
+            } else if (strstr_P(lineBuffer, PSTR("PUT /switch")) != 0) {
               httpMethod = PUT; 
               httpUri = SWITCH;
+            } else if (strstr_P(lineBuffer, PSTR("GET /switch")) != 0) {
+              httpMethod = GET; 
+              httpUri = SWITCH_STATUS;
             }        
 
             currentLineIsBlank = true;
@@ -227,12 +248,10 @@ void parseResponse(EthernetClient client, HTTP_METHOD httpMethod, HTTP_REQUEST_U
     client.println();
     client.println("{\"status\":404, \"message\":\"File Not Found!\"}");
 
-  } 
-  else {
+  } else {
     if (httpMethod == GET && httpUri == CONFIG) {
       length = config(lineBuffer);
-    } 
-    else if (httpMethod == PUT && httpUri == CONFIG) {
+    } else if (httpMethod == PUT && httpUri == CONFIG) {
       parseConfig(lineBuffer, l);
     } 
     //    else if (httpMethod == GET && httpUri == STATUS) {
@@ -240,15 +259,15 @@ void parseResponse(EthernetClient client, HTTP_METHOD httpMethod, HTTP_REQUEST_U
     //    } 
     else if (httpMethod == GET && httpUri == CALIBRE) {
       length = jsonCalibre(lineBuffer);
-    } 
-    else if (httpMethod == GET && httpUri == SWITCH) {
-      length = jsonSwitches(lineBuffer, switchNumber);
-    } 
-    else if (httpMethod == PUT && httpUri == SWITCH) {
+    } else if (httpMethod == GET && httpUri == SWITCH) {
+      length = jsonSwitch(lineBuffer, switchNumber);
+    } else if (httpMethod == PUT && httpUri == SWITCH) {
       parseSwitch(lineBuffer, l);
+    } else if (httpMethod == GET && httpUri == SWITCH_STATUS) {
+      length = jsonSwitches(lineBuffer);
     }
     client.println("HTTP/1.1 200 OK");
-    client.println("Content-Type: text/json");
+    client.println("Content-Type: application/json");
     client.print("Content-Length: ");
     client.println(String(length, DEC));
     client.println();
@@ -301,11 +320,16 @@ float getTemperature() {
 }
 
 
+/* 
+ * Push the Updated Values to the Server.
+ * Will only push when the server IP is configured.
+ */
 void pushUpdate(char* body, int length) {
+  byte _serverIp[4];
+  serverIp(_serverIp);
   if(_serverIp[0] != 0) {
     EthernetClient client;
     if (client.connect(_serverIp, serverPort())) {
-      // Serial.println("connected");
       client.println("POST /hydroponics/app/update HTTP/1.0");
       client.println("Accept: application/json");
       client.println("Content-Type: application/json");
@@ -316,18 +340,15 @@ void pushUpdate(char* body, int length) {
         client.print(body[i]);
       }
       client.println();
-    } 
-    else {
-      Serial.println("connection failed");
+      client.flush();
+    } else {
+      Serial.println("Connection to Server failed.");
     }
-
+    //Read response and dont care...
     if (client.available()) {
       char c = client.read();
-      Serial.print(c);
     }
-  } 
-  else {
-    Serial.println("server ip not set");
+    client.stop();
   }
 }
 
@@ -569,7 +590,31 @@ int jsonCalibre(char* buffer) {
 
   return position; 
 }
-int jsonSwitches(char* buffer, int number) {
+int jsonSwitches(char* buffer) {
+  PROGMEM char sNumber[] = "{\"number\":";
+  PROGMEM char sMode[] = ", \"mode\":";
+  PROGMEM char sStatus[] = ", \"status\":";
+  PROGMEM char sEnd[] = "}";
+
+  int position = 0;
+  buffer[position++] = '[';
+  for(int i=0; i<SWITCHES_COUNT; i++) {
+    if(i > 0) {
+      buffer[position++] = ',';
+    }
+    position = copyBytes(buffer, sNumber, position, sizeof(sNumber));
+    position = addNumber(buffer, i+1, position);
+    position = copyBytes(buffer, sMode, position, sizeof(sMode));
+    position = addNumber(buffer, EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)), position);
+    position = copyBytes(buffer, sStatus, position, sizeof(sStatus));
+    position = addNumber(buffer, bitRead(PORTD,i), position);
+    position = copyBytes(buffer, sEnd, position, sizeof(sEnd));
+  }
+  buffer[position++] = ']';
+  return position; 
+}
+
+int jsonSwitch(char* buffer, int number) {
   PROGMEM char sNumber[] = "{\"number\":";
   PROGMEM char sMode[] = ", \"mode\":";
   PROGMEM char sStatus[] = ", \"status\":";
@@ -657,7 +702,7 @@ void getIp() {
 int port() {
   return int(EEPROM.read(POSITION_LOCAL_PORT) << 8) + int(EEPROM.read(POSITION_LOCAL_PORT+1));
 }
-void serverIp() {
+void serverIp(byte* _serverIp) {
   _serverIp[0] = EEPROM.read(POSITION_SERVER_IP);
   _serverIp[1] = EEPROM.read(POSITION_SERVER_IP+1);
   _serverIp[2] = EEPROM.read(POSITION_SERVER_IP+2);
