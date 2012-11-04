@@ -37,13 +37,16 @@
 #include "hydroponics.h"
 
 #define DHTTYPE DHT22  
-#define PIN_DHT  7     
+#define PIN_DHT  8     
 #define PIN_EMON 4 
+#define PIN_MOISTURE  3     
 #define HTTP_LINE_BUFFER 128
 #define SWITCHES_COUNT 6
 #define START_SWITCHES 100
 #define SWITCHES_SIZE 50
 #define SWITCHES_TIMERS 2
+int SWITCHES_INDEX=2;
+
 
 byte _ip[4];
 EthernetServer server = NULL;
@@ -105,7 +108,7 @@ void setup() {
 
   //Setup Scheduler
   for(int i=0; i<SWITCHES_COUNT; i++) {
-    pinMode(i, OUTPUT); 
+    pinMode(i+SWITCHES_INDEX, OUTPUT); 
   }
   Serial.println("--->");
 }
@@ -123,7 +126,10 @@ void loop() {
       Serial.print(", H:");  
       Serial.print(getHumidity());  
       Serial.print(", I:");  
-      Serial.println(getCurrent());  
+      Serial.print(getCurrent());  
+      Serial.print(", M:");  
+      Serial.println(getMoisture());  
+      
     }
   }
 
@@ -150,16 +156,16 @@ void loop() {
         }
       }
     }
-    if(bitRead(PORTD,i) != mode) {
-      //        Serial.print("change Switch:");
-      //        Serial.print(i);
-      //        Serial.print(" to ");
-      //        Serial.println(mode);
+    if(bitRead(PORTD,i + SWITCHES_INDEX) != mode) {
+              Serial.print("change Switch:");
+              Serial.print(i);
+              Serial.print(" to ");
+              Serial.println(mode);
       if(mode) {
-        digitalWrite(i, HIGH);
+        digitalWrite(i + SWITCHES_INDEX, HIGH);
       } 
       else {
-        digitalWrite(i, LOW);
+        digitalWrite(i + SWITCHES_INDEX, LOW);
       }
       int l = jsonSwitch(lineBuffer, i);
       pushUpdate(lineBuffer, l);
@@ -285,6 +291,7 @@ EnergyMonitor energyMonitor;
 float t, h, lastTemp, lastHum;
 double Irms, lastIrms;
 unsigned long lastSensorUpdate;
+int moisture;
 
 void initSensors() {
   //Setup DHT Sensor
@@ -296,6 +303,7 @@ void readValues() {
   h = dht.readHumidity();
   t = dht.readTemperature();
   Irms = energyMonitor.calcIrms(iRms());
+  moisture = analogRead(PIN_MOISTURE);
 }
 boolean valuesUpdated() {
 //  if(t == lastTemp && h == lastHum & Irms == lastIrms) {
@@ -318,6 +326,9 @@ float getHumidity() {
 float getTemperature() {
   return t;
 }
+int getMoisture() {
+  return moisture;
+}
 
 
 /* 
@@ -330,7 +341,7 @@ void pushUpdate(char* body, int length) {
   if(_serverIp[0] != 0) {
     EthernetClient client;
     if (client.connect(_serverIp, serverPort())) {
-      client.println("POST /hydroponics/app/update HTTP/1.0");
+      client.println("POST /org.hydroponics.web-1.0.0/app/update HTTP/1.0");
       client.println("Accept: application/json");
       client.println("Content-Type: application/json");
       client.print("Content-Length: ");
@@ -566,6 +577,7 @@ int jsonCalibre(char* buffer) {
   PROGMEM char sTemp[] = "\", \"temperature\":";
   PROGMEM char sHum[] = ", \"humidity\":";
   PROGMEM char sCur[] = ", \"current\":";
+  PROGMEM char sMoist[] = ", \"moisture\":";
   PROGMEM char sEnd[] = "}";
 
   int position = copyBytes(buffer, sTime, 0, sizeof(sTime));
@@ -586,6 +598,8 @@ int jsonCalibre(char* buffer) {
   position = addFloat(buffer, getHumidity(), position);
   position = copyBytes(buffer, sCur, position, sizeof(sCur));
   position = addFloat(buffer, getCurrent(), position);
+  position = copyBytes(buffer, sMoist, position, sizeof(sMoist));
+  position = addFloat(buffer, getMoisture(), position);
   position = copyBytes(buffer, sEnd, position, sizeof(sEnd));
 
   return position; 
@@ -632,7 +646,7 @@ int jsonSwitch(char* buffer, int number) {
     if(i>0) {
       buffer[position++] = ',';
     }
-    position = addDigits(buffer, EEPROM.read(START_SWITCHES+((number-1)*SWITCHES_SIZE)+1+i), position);
+      position = addNumber(buffer, EEPROM.read(START_SWITCHES+((number-1)*SWITCHES_SIZE)+1+i), position);
   }
   position = copyBytes(buffer, sEnd, position, sizeof(sEnd));
   return position; 
