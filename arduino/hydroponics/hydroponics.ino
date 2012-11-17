@@ -38,8 +38,8 @@
 
 #define DHTTYPE DHT22  
 #define PIN_DHT  8     
-#define PIN_EMON 4 
-#define PIN_MOISTURE  3     
+#define PIN_EMON 3
+#define PIN_MOISTURE  2     
 #define HTTP_LINE_BUFFER 128
 #define SWITCHES_COUNT 6
 #define START_SWITCHES 100
@@ -104,7 +104,7 @@ void setup() {
   //Setup NTP Time Sync
   Udp.begin(localPort);
   setSyncProvider(processSyncMessage);
-  setSyncInterval(3600);
+  setSyncInterval(24 * 3600 * 1000);
 
   //Setup Scheduler
   for(int i=0; i<SWITCHES_COUNT; i++) {
@@ -138,8 +138,7 @@ void loop() {
     boolean mode = LOW;
     if(EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)) == 2) {
       mode = HIGH;
-    } 
-    else if(EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)) == 3) {
+    } else if(EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)) == 3) {
       for(int k=0; k<SWITCHES_TIMERS; k++) {
         int startHour = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+0);
         int startMinute = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+1);
@@ -157,10 +156,6 @@ void loop() {
       }
     }
     if(bitRead(PORTD,i + SWITCHES_INDEX) != mode) {
-              Serial.print("change Switch:");
-              Serial.print(i);
-              Serial.print(" to ");
-              Serial.println(mode);
       if(mode) {
         digitalWrite(i + SWITCHES_INDEX, HIGH);
       } 
@@ -290,8 +285,7 @@ DHT dht(PIN_DHT, DHTTYPE);
 EnergyMonitor energyMonitor;
 float t, h, lastTemp, lastHum;
 double Irms, lastIrms;
-unsigned long lastSensorUpdate;
-int moisture;
+int moisture, lastMoisture;
 
 void initSensors() {
   //Setup DHT Sensor
@@ -621,7 +615,7 @@ int jsonSwitches(char* buffer) {
     position = copyBytes(buffer, sMode, position, sizeof(sMode));
     position = addNumber(buffer, EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)), position);
     position = copyBytes(buffer, sStatus, position, sizeof(sStatus));
-    position = addNumber(buffer, bitRead(PORTD,i), position);
+    position = addNumber(buffer, bitRead(PORTD,i+SWITCHES_INDEX), position);
     position = copyBytes(buffer, sEnd, position, sizeof(sEnd));
   }
   buffer[position++] = ']';
@@ -793,6 +787,7 @@ time_t processSyncMessage() {
   
     // wait to see if a reply is available
     delay(2000);  
+    
     int packetSize = Udp.parsePacket();
     if(packetSize) {
       // We've received a packet, read the data from it
@@ -842,5 +837,6 @@ unsigned long sendNTPpacket(IPAddress& address) {
   Udp.write(packetBuffer,NTP_PACKET_SIZE);
   Udp.endPacket(); 
 }
+
 
 
