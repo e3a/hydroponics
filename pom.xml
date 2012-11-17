@@ -1,0 +1,114 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <properties>
+        <org.hydroponics.site.repository>scpexe://192.168.0.6/home/maven/site/hydroponics</org.hydroponics.site.repository>
+        <org.spielhuus.repository>scpexe://192.168.0.6/home/maven/repository/</org.spielhuus.repository>
+    </properties>
+
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.hydroponics</groupId>
+    <artifactId>org.hydroponics</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>org.hydroponics</name>
+
+    <url>http://www.spielhuus.org/maven/site/hydroponics/</url>
+
+    <modules>
+        <module>hydroponics-site-skin</module>
+        <!-- module>org.hydroponics.project</module>
+        <module>org.hydroponics.api</module>
+        <module>org.hydroponics.dao</module>
+        <module>org.hydroponics.web</module -->
+    </modules>
+    <licenses>
+        <license>
+            <name>GPL</name>
+            <url>http://www.gnu.org/licenses/gpl.html</url>
+            <comments>The GNU General Public License is a free, copyleft license for software and other kinds of works.</comments>
+        </license>
+    </licenses>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <linkXref>true</linkXref>
+                    <sourceEncoding>utf-8</sourceEncoding>
+                    <minimumTokens>100</minimumTokens>
+                    <targetJdk>1.5</targetJdk>
+                    <excludes>
+                        <exclude>**/*Test.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <!-- plugin>
+                   <groupId>org.apache.maven.plugins</groupId>
+                   <artifactId>maven-surefire-report-plugin</artifactId>
+               </plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <stylesheetfile>${basedir}/src/site/stylesheet/stylesheet.css</stylesheetfile>
+                    <minmemory>128m</minmemory>
+                    <maxmemory>512</maxmemory>
+                    <source>1.5</source>
+                    <breakiterator>true</breakiterator>
+                    <quiet/>
+                    <verbose>false</verbose>
+                    <linksource>false</linksource>
+                    <debug>false</debug>
+                    <links>
+                    </links>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>dependencies</report>
+                            <report>license</report>
+                            <!-- report>index</report -->
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-changes-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>changes-report</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>taglist-maven-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <distributionManagement>
+        <site>
+            <id>${org.hydroponics.site.repository}</id>
+            <url>${org.hydroponics.site.repository}</url>
+        </site>
+        <repository>
+            <id>${org.spielhuus.repository}</id>
+            <url>${org.spielhuus.repository}</url>
+        </repository>
+    </distributionManagement>
+
+</project>
