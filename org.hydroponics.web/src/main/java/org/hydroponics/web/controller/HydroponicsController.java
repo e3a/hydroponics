@@ -65,7 +65,9 @@ public class HydroponicsController {
         logger.log(Level.INFO, new StringBuffer("switches:").append(switches).toString());
 
         mav.addObject(Constants.SWITCHES, switches);
-        mav.addObject(Constants.IMAGES, hydroponicsDao.getImages((Integer)grow.get(Constants.ID)));
+        if(grow != null && grow.containsKey(Constants.ID)) {
+            mav.addObject(Constants.IMAGES, hydroponicsDao.getImages((Integer)grow.get(Constants.ID)));
+        }
         return mav;
     }
     @RequestMapping(value="/list.htm")
