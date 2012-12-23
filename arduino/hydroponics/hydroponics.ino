@@ -25,120 +25,103 @@
  * 
  * ------------------------------------------------------------------------------
  */
+ 
 #include <SPI.h>         
 #include <Ethernet.h>
 #include <EthernetUdp.h>
+#include <Wire.h>  
 #include <Time.h>
-#include <stdio.h>
-#include <EEPROM.h>
-#include <JsonReader.h>
+#include <DS1307RTC.h>
 #include "DHT.h"
 #include "EmonLib.h"
-#include "hydroponics.h"
+#include <EEPROM.h>
 
 #define DHTTYPE DHT22  
 #define PIN_DHT  8     
 #define PIN_EMON 3
-#define PIN_MOISTURE  2     
-#define HTTP_LINE_BUFFER 128
-#define SWITCHES_COUNT 6
-#define START_SWITCHES 100
+#define EMON_FACT 4
+#define EMON_SAMPLES 1480
+#define PIN_MOISTURE 2     
 #define SWITCHES_SIZE 50
+#define START_SWITCHES 100
 #define SWITCHES_TIMERS 2
-int SWITCHES_INDEX=2;
 
+const int SWITCHES_INDEX = 2;
+const int SWITCHES_COUNT = 6;
+const unsigned long broadcastIntervall = 60000;
+const unsigned long ntpIntervall = 86400000;
+const unsigned long currentIntervall = 10000;
 
-byte _ip[4];
-EthernetServer server = NULL;
+const int NTP_PACKET_SIZE= 48;
+const unsigned int localPort = 8888;
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets 
+byte broadcastServer[] = {255, 255, 255, 255};  
+byte timeserver[] = {94,126,19,139};  
+int timezone = 1;
 
+EthernetServer server(9997);
 EthernetUDP Udp;
-JsonReader reader;
 
-unsigned int localPort = 8888;
-const int NTP_PACKET_SIZE = 48;
-byte packetBuffer[NTP_PACKET_SIZE];
+IPAddress address(broadcastServer);
+DHT dht(PIN_DHT, DHTTYPE);
+EnergyMonitor energyMonitor;
 
-char lineBuffer[HTTP_LINE_BUFFER];
-int switchNumber;
-unsigned long currentTimestamp = 0;
-
-byte defaultValues[] = {
-  1,                // (00) is configured 
-  0,                // (01) enable DHCP
-  192, 168, 0, 249, // (02) IP local
-  00, 80,           // (06) Port local
-  81, 94, 123, 17,  // (08) Time Server (0.ch.pool.ntp.org)
-  192, 168, 0, 11,  // (12) Hydroponics Server IP
-  0x1f, 0x90,       // (16) Hydroponics Server Port
-  2,                // (18) TIMEZONE
-  230,              // (19) Voltage
-  0, 4              // (20) Irms Factor  
-};
-
-/* Main Setup */
 void setup() {
+  // Open serial communications and wait for port to open:
   Serial.begin(9600);
-  Serial.println("<---");
-  Serial.print("Free RAM:");
-  Serial.println(freeRam());
 
-  /* Setup the EEPROM for configuration */
-  // EEPROM.write(0, 0); //FLUSH EEPROM
-  if(EEPROM.read(0) == 0) {
-    for(int i=0; i<sizeof(defaultValues); i++) {
-      EEPROM.write(i, defaultValues[i]);
-    }
+  // initialize the RTC Clock
+  setSyncProvider(RTC.get);
+
+  // initialize the sensors
+  //Setup DHT Sensor
+  dht.begin();
+  //Setup Energy Monitor
+  energyMonitor.current(PIN_EMON, EMON_FACT);
+  
+  // start Ethernet and UDP
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println("Failed to configure Ethernet using DHCP");
+    // no point in carrying on, so do nothing forevermore:
+    for(;;)
+      ;
   }
-
-  //Setup Sensors
-  initSensors();
-
-  //Setup Server
-  getIp();
-  IPAddress ip(_ip);
-  server = EthernetServer(port());
-  Ethernet.begin(mac, ip);
-  server.begin();
-
-  //Setup NTP Time Sync
   Udp.begin(localPort);
-  setSyncProvider(processSyncMessage);
-  setSyncInterval(24 * 3600 * 1000);
-
+  server.begin();
+  
   //Setup Scheduler
   for(int i=0; i<SWITCHES_COUNT; i++) {
     pinMode(i+SWITCHES_INDEX, OUTPUT); 
   }
-  Serial.println("--->");
 }
 
+unsigned long lastBroadcast = 0;
+unsigned long lastNtpSync= 0;
+unsigned long lastCurrentUpdate= 0;
+
+byte lastTemp, lastHum;
+int lastIrms, lastMoisture;
+
 void loop() {
-
-  if(currentTimestamp == 0 || (currentTimestamp + 50000) < millis()) {
-    currentTimestamp = millis();
-    readValues();
-    if(valuesUpdated()) {
-      int l = jsonCalibre(lineBuffer);
-      pushUpdate(lineBuffer, l);
-      Serial.print("Values Updated: T:");  
-      Serial.print(getTemperature());  
-      Serial.print(", H:");  
-      Serial.print(getHumidity());  
-      Serial.print(", I:");  
-      Serial.print(getCurrent());  
-      Serial.print(", M:");  
-      Serial.println(getMoisture());  
-      
-    }
-  }
-
+//  Serial.print(day());
+//  Serial.print(":");
+//  Serial.print(month());
+//  Serial.print(":");
+//  Serial.print(year());
+//  Serial.print(" ");
+//  Serial.print(hour());
+//  Serial.print(":");
+//  Serial.print(minute());
+//  Serial.print(":");
+//  Serial.println(second());
+  
   //check switches
   for(int i=0; i<SWITCHES_COUNT; i++) {
     boolean mode = LOW;
-    if(EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)) == 2) {
+    if(EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)) == 1) { // switch mode on
       mode = HIGH;
-    } else if(EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)) == 3) {
+    } else if(EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)) == 2) { // switch mode auto
       for(int k=0; k<SWITCHES_TIMERS; k++) {
         int startHour = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+0);
         int startMinute = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)+1+(6*k)+1);
@@ -162,626 +145,170 @@ void loop() {
       else {
         digitalWrite(i + SWITCHES_INDEX, LOW);
       }
-      int l = jsonSwitch(lineBuffer, i);
-      pushUpdate(lineBuffer, l);
+      //Broadcast the change
+      packetBuffer[0] ='S';
+      packetBuffer[1] = i;
+      packetBuffer[2] = EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE));
+      packetBuffer[3] = bitRead(PORTD,i+SWITCHES_INDEX);
+    
+      Udp.beginPacket(address, 9999);
+      Udp.write(packetBuffer,4);
+      Udp.endPacket(); 
+      
+      lastCurrentUpdate = 0;
     }
+  }  
+  
+  //Send Client Broadcast
+  if(lastBroadcast == 0 || lastBroadcast + broadcastIntervall < millis()) {
+    memset(packetBuffer, 0, NTP_PACKET_SIZE); 
+  
+    unsigned long _now = now();
+    packetBuffer[0] ='C';
+    packetBuffer[1] = (byte)((_now >> 24) & 0xff);
+    packetBuffer[2] = (byte)((_now >> 16) & 0xff);
+    packetBuffer[3] = (byte)((_now >> 8) & 0xff);
+    packetBuffer[4] = (byte)(_now & 0xff);
+  
+    Udp.beginPacket(address, 9999);
+    Udp.write(packetBuffer,5);
+    Udp.endPacket(); 
+
+    lastBroadcast = millis();
   }
 
-
+  //Set RTC Clock
+  if(lastNtpSync == 0 || lastNtpSync + ntpIntervall < millis()) {
+    Serial.println("Update RTC");
+    time_t t = processSyncMessage();
+    if(t > 0) {
+      RTC.set(t);   // set the RTC and the system time to the received value
+      setTime(t);          
+      lastNtpSync = millis();
+    }
+  }
+  
+  //Read Values
+  if(lastCurrentUpdate == 0 || lastCurrentUpdate + currentIntervall < millis()) {
+    byte h = (dht.readHumidity()+0.5);
+    byte t = (dht.readTemperature()+0.5);
+    int Irms = ((int)(energyMonitor.calcIrms(EMON_SAMPLES)*10+0.5))*230/10;
+    int moisture = analogRead(PIN_MOISTURE);
+    if(t != lastTemp || h != lastHum || Irms != lastIrms || moisture != lastMoisture) {
+      lastTemp = t;
+      lastHum = h;
+      lastIrms = Irms;
+      lastMoisture = moisture;
+      Serial.print("V ");
+      Serial.print(t);
+      Serial.print("C, ");
+      Serial.print(h);
+      Serial.print("%, ");
+      Serial.print(Irms);
+      Serial.print("W, ");
+      Serial.println(moisture);
+  
+      memset(packetBuffer, 0, NTP_PACKET_SIZE); 
+    
+      packetBuffer[0] ='V';
+      packetBuffer[1] = t;
+      packetBuffer[2] = h;
+      packetBuffer[3] = (byte(Irms >> 8));
+      packetBuffer[4]  = (byte(Irms & 0x00FF)); 
+      packetBuffer[5] = (byte(moisture >> 8));
+      packetBuffer[6]  = (byte(moisture & 0x00FF)); 
+    
+      Udp.beginPacket(address, 9999);
+      Udp.write(packetBuffer,7);
+      Udp.endPacket();
+    }
+    lastCurrentUpdate = millis();
+  }
+  
+  // listen for incoming clients
   EthernetClient client = server.available();
-  int linePosition = 0;
-  boolean parseBody = false;
   if (client) {
-    // an http request ends with a blank line
-    boolean currentLineIsBlank = true;
-    // Serial.println("start http parse");
-    HTTP_METHOD httpMethod;
-    HTTP_REQUEST_URI httpUri = NONE;
-
+    int readCounter = 0;
+    boolean query = false;
     while (client.connected()) {
       if (client.available()) {
         char c = client.read();
-        if(parseBody) {
-          // Serial.print(c);
-          lineBuffer[linePosition++] = c;          
-        } 
-        else {
-          if (c == '\n' && currentLineIsBlank) {
-            // send a standard http response header
-            // Serial.println("end http parse");
-            parseBody = true;
+        if(readCounter == 0 && c == '?') {
+          query = true;
+        } else if(readCounter == 0 && c >= 0 && c < SWITCHES_COUNT) {
+
+          // NUMBER of the switch
+          // MODE of the switch
+          // size of the schedules (bytes)
+          // SCHEDULE the schedule
+
+          EEPROM.write(START_SWITCHES + (SWITCHES_SIZE * c), client.read());
+          int size = client.read();
+          for(int i=0; i<size; i++) {
+            EEPROM.write(START_SWITCHES + (SWITCHES_SIZE * c) + i + 1, client.read());
           }
-          if (c == '\n') {
-            if (strstr_P(lineBuffer, PSTR("GET /config")) != 0) {
-              httpMethod = GET; 
-              httpUri = CONFIG;
-            } 
-            else if (strstr_P(lineBuffer, PSTR("PUT /config")) != 0) {
-              httpMethod = PUT; 
-              httpUri = CONFIG;
-            } 
-            else if (strstr_P(lineBuffer, PSTR("GET /status")) != 0) {
-              httpMethod = GET; 
-              httpUri = STATUS;
-            } else if (strstr_P(lineBuffer, PSTR("GET /calibre")) != 0) {
-              httpMethod = GET; 
-              httpUri = CALIBRE;
-            } else if (strstr_P(lineBuffer, PSTR("GET /switch/")) != 0) {
-              httpMethod = GET; 
-              httpUri = SWITCH;
-              switchNumber = lineBuffer[12]-'0';
-            } else if (strstr_P(lineBuffer, PSTR("PUT /switch")) != 0) {
-              httpMethod = PUT; 
-              httpUri = SWITCH;
-            } else if (strstr_P(lineBuffer, PSTR("GET /switch")) != 0) {
-              httpMethod = GET; 
-              httpUri = SWITCH_STATUS;
-            }        
+          
+        } else if(readCounter == 1 && c == 'S') {
 
-            currentLineIsBlank = true;
-            linePosition = 0;
-            memset(&lineBuffer, 0, HTTP_LINE_BUFFER);
+          // LENGTH of the message
+          // for each switch
+          // number of the switch
+          // mode of the switch
+          // status of the switch
 
-          } 
-          else if (c != '\r') {
-            currentLineIsBlank = false;
-            lineBuffer[linePosition++] = c;
+          client.write(3 * SWITCHES_COUNT);
+          for(int i=0; i<SWITCHES_COUNT; i++) {
+            client.write(i);
+            client.write(EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)));
+            client.write(bitRead(PORTD,i+SWITCHES_INDEX));
+          }
+        } else if(readCounter == 1 && c == 'C') {
+          Serial.println("get config");
+
+          // LENGTH of the message
+          // TIMEZONE
+          // NTP_SERVER (4 bytes)
+          
+          client.write(1 + 4);
+          client.write(timezone);
+          client.write(timeserver[0]);
+          client.write(timeserver[1]);
+          client.write(timeserver[2]);
+          client.write(timeserver[3]);
+          
+          
+        } else if(readCounter == 1 && c >= 0 && c < SWITCHES_COUNT) {
+           
+          // LENGTH of the message
+          // COUNT of schedules
+          // MODE of the SWTICH
+          // STATUS of the SWITCH
+          // START-END (hh:mm:ss) 
+          
+          client.write(3 + SWITCHES_TIMERS*6);          
+          client.write(EEPROM.read(START_SWITCHES+(c*SWITCHES_SIZE)));
+          client.write(bitRead(PORTD,c+SWITCHES_INDEX));
+          client.write(SWITCHES_TIMERS);
+          for(int i=0; i<(SWITCHES_TIMERS*6); i++) {
+            client.write(EEPROM.read(START_SWITCHES+(c*SWITCHES_SIZE)+1+i));
           }
         }
-      } 
-      else { //all request bytes received
-        parseResponse(client, httpMethod, httpUri, lineBuffer, linePosition);
-        break;
+        readCounter ++;
       }
     }
-    // Serial.println(" ... close");
+    client.flush();
+    // give the Client time to receive the data
     delay(1);
-    client.stop();
-  }
-  delay(500);
-}
-
-void parseResponse(EthernetClient client, HTTP_METHOD httpMethod, HTTP_REQUEST_URI httpUri, char* lineBuffer, int l) {
-  int length = 0;
-  if(httpUri == NONE) {
-    client.println("HTTP/1.1 404 Not Found");
-    client.println("Content-Type: text/json");
-    client.println();
-    client.println("{\"status\":404, \"message\":\"File Not Found!\"}");
-
-  } else {
-    if (httpMethod == GET && httpUri == CONFIG) {
-      length = config(lineBuffer);
-    } else if (httpMethod == PUT && httpUri == CONFIG) {
-      parseConfig(lineBuffer, l);
-    } 
-    //    else if (httpMethod == GET && httpUri == STATUS) {
-    //      length = jsonStatus(lineBuffer);
-    //    } 
-    else if (httpMethod == GET && httpUri == CALIBRE) {
-      length = jsonCalibre(lineBuffer);
-    } else if (httpMethod == GET && httpUri == SWITCH) {
-      length = jsonSwitch(lineBuffer, switchNumber);
-    } else if (httpMethod == PUT && httpUri == SWITCH) {
-      parseSwitch(lineBuffer, l);
-    } else if (httpMethod == GET && httpUri == SWITCH_STATUS) {
-      length = jsonSwitches(lineBuffer);
-    }
-    client.println("HTTP/1.1 200 OK");
-    client.println("Content-Type: application/json");
-    client.print("Content-Length: ");
-    client.println(String(length, DEC));
-    client.println();
-    client.println(lineBuffer);
-  }
-}
-
-/* 
- *    Sensor Utilities
- * 
- */
-
-DHT dht(PIN_DHT, DHTTYPE);
-EnergyMonitor energyMonitor;
-float t, h, lastTemp, lastHum;
-double Irms, lastIrms;
-int moisture, lastMoisture;
-
-void initSensors() {
-  //Setup DHT Sensor
-  dht.begin();
-  //Setup Energy Monitor
-  energyMonitor.current(PIN_EMON, 4); // XXX this is the value to config
-}
-void readValues() {
-  h = dht.readHumidity();
-  t = dht.readTemperature();
-  Irms = energyMonitor.calcIrms(iRms());
-  moisture = analogRead(PIN_MOISTURE);
-}
-boolean valuesUpdated() {
-//  if(t == lastTemp && h == lastHum & Irms == lastIrms) {
-//    return false;    
-//  } 
-//  else {
-//    lastTemp = t;
-//    lastHum = h;
-//    lastIrms = Irms;
-//    return true;
-//  }
-  return true;
-}
-double getCurrent() {
-  return Irms;
-}
-float getHumidity() {
-  return h;
-}
-float getTemperature() {
-  return t;
-}
-int getMoisture() {
-  return moisture;
-}
-
-
-/* 
- * Push the Updated Values to the Server.
- * Will only push when the server IP is configured.
- */
-void pushUpdate(char* body, int length) {
-  byte _serverIp[4];
-  serverIp(_serverIp);
-  if(_serverIp[0] != 0) {
-    EthernetClient client;
-    if (client.connect(_serverIp, serverPort())) {
-      client.println("POST /org.hydroponics.web-1.0.0/app/update HTTP/1.0");
-      client.println("Accept: application/json");
-      client.println("Content-Type: application/json");
-      client.print("Content-Length: ");
-      client.println(length);
-      client.println();
-      for(int i=0; i<length; i++) {
-        client.print(body[i]);
-      }
-      client.println();
-      client.flush();
-    } else {
-      Serial.println("Connection to Server failed.");
-    }
-    //Read response and dont care...
-    if (client.available()) {
-      char c = client.read();
-    }
+    // close the connection:
     client.stop();
   }
 }
-
-
-/* 
- *    String Utils
- * 
- */
-
-void parseSwitch(char* buffer, int length) {
-  int switchNumber;
-  reader.reset();
-  reader.load(buffer, 0, length);
-
-  char actName[10], value[10];
-
-  JsonReader::Types type = reader.next(); 
-  while(type != JsonReader::END) {
-    if(type == JsonReader::NAME) {
-      reader.characters(actName);
-
-    } 
-    else if(type == JsonReader::VALUE) {
-      reader.characters(value);
-      if(strcmp(actName, "number")  == 0)  {
-        switchNumber = atoi(value);
-      } 
-      else if(strcmp(actName, "mode")  == 0)  {
-        EEPROM.write(START_SWITCHES+((switchNumber-1)*SWITCHES_SIZE), atoi(value));
-      } 
-    } 
-    else if(type == JsonReader::START_ARRAY) {
-      int arrayItems = 0;
-      do {
-        type = reader.next();
-        reader.characters(value);
-        EEPROM.write(START_SWITCHES+((switchNumber-1)*SWITCHES_SIZE)+1+arrayItems, atoi(value));
-        arrayItems ++;
-      } 
-      while(type != JsonReader::END_ARRAY);
-    }
-    type = reader.next();
-  }
-}
-void parseConfig(char* buffer, int length) {
-  reader.reset();
-  reader.load(buffer, 0, length);
-
-  char actName[7], value[17];
-
-  JsonReader::Types type = reader.next(); 
-  while(type != JsonReader::END) {
-    if(type == JsonReader::NAME) {
-      reader.characters(actName);
-
-    } 
-    else if(type == JsonReader::VALUE) {
-      reader.characters(value);
-      if(strcmp(actName, "ip")  == 0)  {
-        byte ip[4];
-        parseIp(value, sizeof(value), ip);
-        EEPROM.write(POSITION_LOCAL_IP, ip[0]);
-        EEPROM.write(POSITION_LOCAL_IP+1, ip[1]);
-        EEPROM.write(POSITION_LOCAL_IP+2, ip[2]);
-        EEPROM.write(POSITION_LOCAL_IP+3, ip[3]);
-
-      } 
-      else if(strcmp(actName, "port")  == 0)  {
-        int intValue = atoi(value);
-        EEPROM.write(POSITION_LOCAL_PORT, (byte(intValue >> 8)));
-        EEPROM.write(POSITION_LOCAL_PORT+1, (byte(intValue & 0x00FF)));
-
-      } 
-      else if(strcmp(actName, "ntp")  == 0)  {
-        byte ip[4];
-        parseIp(value, sizeof(value), ip);
-        EEPROM.write(POSITION_NTP_SERVER, ip[0]);
-        EEPROM.write(POSITION_NTP_SERVER+1, ip[1]);
-        EEPROM.write(POSITION_NTP_SERVER+2, ip[2]);
-        EEPROM.write(POSITION_NTP_SERVER+3, ip[3]);
-
-      } 
-      else if(strcmp(actName, "server")  == 0)  {
-        byte ip[4];
-        parseIp(value, sizeof(value), ip);
-        EEPROM.write(POSITION_SERVER_IP, ip[0]);
-        EEPROM.write(POSITION_SERVER_IP+1, ip[1]);
-        EEPROM.write(POSITION_SERVER_IP+2, ip[2]);
-        EEPROM.write(POSITION_SERVER_IP+3, ip[3]);
-
-      } 
-      else if(strcmp(actName, "sport")  == 0)  {
-        int intValue = atoi(value);
-        EEPROM.write(POSITION_SERVER_PORT, (byte(intValue >> 8)));
-        EEPROM.write(POSITION_SERVER_PORT+1, (byte(intValue & 0x00FF)));
-
-      } 
-      else if(strcmp(actName, "zone")  == 0)  {
-        EEPROM.write(POSITION_TIMEZONE, atoi(value));
-      } 
-      else if(strcmp(actName, "u")  == 0)  {
-        EEPROM.write(POSITION_VOLTAGE, atoi(value));
-      } 
-      else if(strcmp(actName, "iRms")  == 0)  {
-        int intValue = atoi(value);
-        EEPROM.write(POSITION_IRMS, (byte(intValue >> 8)));
-        EEPROM.write(POSITION_IRMS+1, (byte(intValue & 0x00FF)));
-      }
-    }
-    type = reader.next();
-  }
-}
-void parseIp(char* in, int length, byte* ip) {
-  char octet[3];
-  int octetPosition = 0, number = 0;
-  for(int i=0; i<length; i++) {
-    if(in[i] == '.' || in[i] == '\0') {
-      ip[octetPosition++] = atoi(octet);
-      number = 0;
-      octet[0] = 0;
-      octet[1] = 0;
-      octet[2] = 0;
-      if(in[i] == '\0') {
-        break;
-      }
-    } 
-    else {
-      octet[number++] = in[i];
-    }
-  }
-}
-
-int config(char* buffer) {
-  PROGMEM char sLocalIp[] = "{\"ip\":\"";
-  PROGMEM char sLocalPort[] = "\", \"port\":";
-  PROGMEM char sNtp[] = ", \"ntp\":\"";
-  PROGMEM char sServerIp[] = "\", \"server\":\"";
-  PROGMEM char sServerPort[] = "\", \"sport\":";
-  PROGMEM char sTimezone[] = ", \"zone\":";
-  PROGMEM char sVoltage[] = ", \"u\":";
-  PROGMEM char sIrms[] = ", \"u\":";
-  PROGMEM char sEnd[] = "}";
-
-  int position = copyBytes(buffer, sLocalIp, 0, sizeof(sLocalIp));
-  position = addNumber(buffer, EEPROM.read(POSITION_LOCAL_IP), position);
-  buffer[position++] = '.';
-  position = addNumber(buffer, EEPROM.read(POSITION_LOCAL_IP+1), position);
-  buffer[position++] = '.';
-  position = addNumber(buffer, EEPROM.read(POSITION_LOCAL_IP+2), position);
-  buffer[position++] = '.';
-  position = addNumber(buffer, EEPROM.read(POSITION_LOCAL_IP+3), position);
-  position = copyBytes(buffer, sLocalPort, position, sizeof(sLocalPort));
-  position = addNumber(buffer, port(), position);
-  position = copyBytes(buffer, sNtp, position, sizeof(sNtp));
-  position = addNumber(buffer, EEPROM.read(POSITION_NTP_SERVER), position);
-  buffer[position++] = '.';
-  position = addNumber(buffer, EEPROM.read(POSITION_NTP_SERVER+1), position);
-  buffer[position++] = '.';
-  position = addNumber(buffer, EEPROM.read(POSITION_NTP_SERVER+2), position);
-  buffer[position++] = '.';
-  position = addNumber(buffer, EEPROM.read(POSITION_NTP_SERVER+3), position);
-  position = copyBytes(buffer, sServerIp, position, sizeof(sServerIp));
-  position = addNumber(buffer, EEPROM.read(POSITION_SERVER_IP), position);
-  buffer[position++] = '.';
-  position = addNumber(buffer, EEPROM.read(POSITION_SERVER_IP+1), position);
-  buffer[position++] = '.';
-  position = addNumber(buffer, EEPROM.read(POSITION_SERVER_IP+2), position);
-  buffer[position++] = '.';
-  position = addNumber(buffer, EEPROM.read(POSITION_SERVER_IP+3), position);
-  position = copyBytes(buffer, sServerPort, position, sizeof(sServerPort));
-  position = addNumber(buffer, serverPort(), position);
-  position = copyBytes(buffer, sTimezone, position, sizeof(sTimezone));
-  position = addNumber(buffer, timezone(), position);
-  position = copyBytes(buffer, sVoltage, position, sizeof(sVoltage));
-  position = addNumber(buffer, voltage(), position);
-  position = copyBytes(buffer, sIrms, position, sizeof(sIrms));
-  position = addNumber(buffer, iRms(), position);
-  position = copyBytes(buffer, sEnd, position, sizeof(sEnd));
-  return position;
-}
-
-//int jsonStatus(char* buffer) {
-//  PROGMEM char sTime[] = "{\"time\":\"";
-//  PROGMEM char sUptime[] = "\", \"uptime\":";
-//  PROGMEM char sRam[] = ", \"ram\":";
-//  PROGMEM char sProcessorTemp[] = ", \"processorTemp\":";
-//  PROGMEM char sTimestatus[] = ", \"timeStatus\":";
-//  PROGMEM char sEnd[] = "}";
-//
-//  int position = copyBytes(buffer, sTime, 0, sizeof(sTime));
-//  position = addDigits(buffer, day(), position);
-//  buffer[position++] = ':';
-//  position = addDigits(buffer, month(), position);
-//  buffer[position++] = ':';
-//  position = addNumber(buffer, year(), position);
-//  buffer[position++] = ' ';
-//  position = addDigits(buffer, hour(), position);
-//  buffer[position++] = ':';
-//  position = addDigits(buffer, minute(), position);
-//  buffer[position++] = ':';
-//  position = addDigits(buffer, second(), position);  
-//  position = copyBytes(buffer, sUptime, position, sizeof(sUptime));
-//  position = addNumber(buffer, (now() - startupTime), position);
-//  position = copyBytes(buffer, sRam, position, sizeof(sRam));
-//  position = addNumber(buffer, freeRam(), position);
-//  position = copyBytes(buffer, sProcessorTemp, position, sizeof(sProcessorTemp));
-//  position = addNumber(buffer, processorTemp(), position);
-//  position = copyBytes(buffer, sTimestatus, position, sizeof(sTimestatus));
-//  position = addNumber(buffer, timeStatus(), position);
-//  position = copyBytes(buffer, sEnd, position, sizeof(sEnd));
-//  return position;
-//}
-int jsonCalibre(char* buffer) {
-  PROGMEM char sTime[] = "{\"time\":\"";
-  PROGMEM char sTemp[] = "\", \"temperature\":";
-  PROGMEM char sHum[] = ", \"humidity\":";
-  PROGMEM char sCur[] = ", \"current\":";
-  PROGMEM char sMoist[] = ", \"moisture\":";
-  PROGMEM char sEnd[] = "}";
-
-  int position = copyBytes(buffer, sTime, 0, sizeof(sTime));
-  position = addDigits(buffer, day(), position);
-  buffer[position++] = ':';
-  position = addDigits(buffer, month(), position);
-  buffer[position++] = ':';
-  position = addNumber(buffer, year(), position);
-  buffer[position++] = ' ';
-  position = addDigits(buffer, hour(), position);
-  buffer[position++] = ':';
-  position = addDigits(buffer, minute(), position);
-  buffer[position++] = ':';
-  position = addDigits(buffer, second(), position);  
-  position = copyBytes(buffer, sTemp, position, sizeof(sTemp));
-  position = addFloat(buffer, getTemperature(), position);
-  position = copyBytes(buffer, sHum, position, sizeof(sHum));
-  position = addFloat(buffer, getHumidity(), position);
-  position = copyBytes(buffer, sCur, position, sizeof(sCur));
-  position = addFloat(buffer, getCurrent(), position);
-  position = copyBytes(buffer, sMoist, position, sizeof(sMoist));
-  position = addFloat(buffer, getMoisture(), position);
-  position = copyBytes(buffer, sEnd, position, sizeof(sEnd));
-
-  return position; 
-}
-int jsonSwitches(char* buffer) {
-  PROGMEM char sNumber[] = "{\"number\":";
-  PROGMEM char sMode[] = ", \"mode\":";
-  PROGMEM char sStatus[] = ", \"status\":";
-  PROGMEM char sEnd[] = "}";
-
-  int position = 0;
-  buffer[position++] = '[';
-  for(int i=0; i<SWITCHES_COUNT; i++) {
-    if(i > 0) {
-      buffer[position++] = ',';
-    }
-    position = copyBytes(buffer, sNumber, position, sizeof(sNumber));
-    position = addNumber(buffer, i+1, position);
-    position = copyBytes(buffer, sMode, position, sizeof(sMode));
-    position = addNumber(buffer, EEPROM.read(START_SWITCHES+((i)*SWITCHES_SIZE)), position);
-    position = copyBytes(buffer, sStatus, position, sizeof(sStatus));
-    position = addNumber(buffer, bitRead(PORTD,i+SWITCHES_INDEX), position);
-    position = copyBytes(buffer, sEnd, position, sizeof(sEnd));
-  }
-  buffer[position++] = ']';
-  return position; 
-}
-
-int jsonSwitch(char* buffer, int number) {
-  PROGMEM char sNumber[] = "{\"number\":";
-  PROGMEM char sMode[] = ", \"mode\":";
-  PROGMEM char sStatus[] = ", \"status\":";
-  PROGMEM char sTimer[] = ", \"timer\":[";
-  PROGMEM char sEnd[] = "]}";
-
-  int position = copyBytes(buffer, sNumber, 0, sizeof(sNumber));
-  position = addNumber(buffer, number, position);
-  position = copyBytes(buffer, sMode, position, sizeof(sMode));
-  position = addNumber(buffer, EEPROM.read(START_SWITCHES+((number-1)*SWITCHES_SIZE)), position);
-  position = copyBytes(buffer, sStatus, position, sizeof(sStatus));
-  position = addNumber(buffer, bitRead(PORTD,number-1), position);
-  position = copyBytes(buffer, sTimer, position, sizeof(sTimer));
-  for(int i=0; i<(SWITCHES_TIMERS*6); i++) {
-    if(i>0) {
-      buffer[position++] = ',';
-    }
-      position = addNumber(buffer, EEPROM.read(START_SWITCHES+((number-1)*SWITCHES_SIZE)+1+i), position);
-  }
-  position = copyBytes(buffer, sEnd, position, sizeof(sEnd));
-  return position; 
-}
-
-int copyBytes(char* target, char* source, int p, int l) {
-  for(int i=0; i<l-1; i++) {
-    target[p+i] = source[i];
-  }
-  return p+l-1;
-}
-int addDigits(char* target, byte number, int p) {
-  char dChar[3];
-  itoa(number, dChar, 10);
-  if(number < 10) {
-    target[p] = '0';
-    target[p+1] = dChar[0];
-  } 
-  else {
-    target[p] = dChar[0];
-    target[p+1] = dChar[1];
-  }
-  return p + 2;
-}
-int addNumber(char* target, int number, int p) {
-  char dChar[6];
-  itoa(number, dChar, 10);
-  int length = 0;
-  for(int i=0; i<sizeof(dChar); i++) {
-    if(dChar[i] == '\0') {
-      break;
-    } 
-    else {
-      target[p+i] = dChar[i];
-      length++;
-    }
-  }
-  return p + length;
-}
-int addFloat(char* target, float number, int p) {
-  char dChar[10];
-  dtostrf(number, 1, 2, dChar);
-  int length = 0;
-  for(int i=0; i<sizeof(dChar); i++) {
-    if(dChar[i] == '\0') {
-      break;
-    } 
-    else {
-      target[p+i] = dChar[i];
-      length ++;
-    }
-  }
-  return p + length;
-}
-
-
-/*
- * Properties for configuration
- */
-
-void getIp() {
-  _ip[0] = EEPROM.read(POSITION_LOCAL_IP);
-  _ip[1] = EEPROM.read(POSITION_LOCAL_IP+1);
-  _ip[2] = EEPROM.read(POSITION_LOCAL_IP+2);
-  _ip[3] = EEPROM.read(POSITION_LOCAL_IP+3);
-}
-int port() {
-  return int(EEPROM.read(POSITION_LOCAL_PORT) << 8) + int(EEPROM.read(POSITION_LOCAL_PORT+1));
-}
-void serverIp(byte* _serverIp) {
-  _serverIp[0] = EEPROM.read(POSITION_SERVER_IP);
-  _serverIp[1] = EEPROM.read(POSITION_SERVER_IP+1);
-  _serverIp[2] = EEPROM.read(POSITION_SERVER_IP+2);
-  _serverIp[3] = EEPROM.read(POSITION_SERVER_IP+3);
-}
-int serverPort() {
-  return int(EEPROM.read(POSITION_SERVER_PORT) << 8) + int(EEPROM.read(POSITION_SERVER_PORT+1));
-}
-void timeserver(byte* _timeserver) {
-  _timeserver[0] = EEPROM.read(POSITION_NTP_SERVER);
-  _timeserver[1] = EEPROM.read(POSITION_NTP_SERVER+1);
-  _timeserver[2] = EEPROM.read(POSITION_NTP_SERVER+2);
-  _timeserver[3] = EEPROM.read(POSITION_NTP_SERVER+3);
-}
-int timezone() {
-  return EEPROM.read(POSITION_TIMEZONE);
-}
-int voltage() {
-  return EEPROM.read(POSITION_VOLTAGE);
-}
-int iRms() {
-  return int(EEPROM.read(POSITION_IRMS) << 8) + int(EEPROM.read(POSITION_IRMS+1));
-} 
-
-/* 
- *    String Utils
- * 
- */
-String digits(int number) {
-  String result = "";
-  if(number < 10) {
-    result += "0";
-  }
-  result += String(number);
-  return result;
-}
-String parseIP(byte* buffer) {
-  String result = "";
-  for(int i=0; i<4; i++) {
-    if(i>0) {
-      result += ".";
-    }
-    result += buffer[i];
-  }
-  return result;
-}
-
-/* 
- *    Misc Utils
- * 
- */
-
-int freeRam () {
-  extern int __heap_start, *__brkval; 
-  int v; 
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
-}
-
-/* 
- *    NTP Time Methods
- * 
- */
 
 time_t processSyncMessage() {
   boolean success = false;
   
   while(!success) {
-    Serial.println("Get Time from NTP Server...");
-    byte ts[4];
-    timeserver(ts);
-    IPAddress timeserverIp = IPAddress(ts);
+    IPAddress timeserverIp = IPAddress(timeserver);
 
     sendNTPpacket(timeserverIp); // send an NTP packet to a time server
   
@@ -806,12 +333,9 @@ time_t processSyncMessage() {
       const unsigned long seventyYears = 2208988800UL;     
       // subtract seventy years:
       unsigned long epoch = secsSince1900 - seventyYears;  
-      epoch += (timezone() * 60 * 60);
+      epoch += (timezone * 60 * 60);
       success = true;
       return epoch;
-    } else {
-      Serial.println("Failed to Parse UDP Response!");
-      delay(5000);
     }
   }
 }
@@ -837,6 +361,3 @@ unsigned long sendNTPpacket(IPAddress& address) {
   Udp.write(packetBuffer,NTP_PACKET_SIZE);
   Udp.endPacket(); 
 }
-
-
-

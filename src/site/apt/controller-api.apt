@@ -1,6 +1,6 @@
  
     ------
-	Hydroponics Controller REST API
+	Hydroponics Controller API
     ------
     ------
     04.11.2012
@@ -8,13 +8,41 @@
 
 Hydroponics Controller API
 
-  The Hydroponics Controller provides a pragmatic REST interface.
-
+  The Hydroponics Controller provides a binary TCP interface. 
+  
 Config
 
-Current
+GET http://SERVER_IP/calibre
+
+ Read the Calibre from the Controller.
+ 
+--------------------------
+{
+  "time":"18:11:2012 23:52:53",
+  "temperature":24.60,
+  "humidity":39.20,
+  "current":0.62,
+  "moisture":0.00
+}
+--------------------------
+
+*---------------+---------------------------------------+
+| time 		| The Controller Time			|
+*---------------+---------------------------------------+
+| temperature 	| The Air Temperature in °C		|
+*---------------+---------------------------------------+
+| humidity 	| The Air Humidity in %			|
+*---------------+---------------------------------------+
+|current	| The Current in Ampere			|
+*---------------+---------------------------------------+
+|moisture	| The Moisture of the Grow Medium 	|
+*---------------+---------------------------------------+
 
 Switches
+
+* GET http://SERVER_IP/switches
+
+
 
 Switch
 
