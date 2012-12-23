@@ -1,0 +1,8 @@
+Installation Guide
+------------------
+
+Build the arduino hardware and put the sketch on it.
+
+You need to have Jetty to run the Java Server.
+
+

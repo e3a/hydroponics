@@ -1,0 +1,14 @@
+Hydroponics Controller
+----------------------
+
+The hydroponics controller is build with an arduino ethernet and a java server to capture the data.
+
+Features:
+
+- Controllable Power Switches 
+- Capture Temperature/Humidity
+- Capture Moisture of the Medium
+- Control multiple grows
+- Count Days in Vegetation and Flower Period
+- 
+
