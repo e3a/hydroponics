@@ -19,10 +19,8 @@
 
     <modules>
         <module>hydroponics-site-skin</module>
-        <!-- module>org.hydroponics.project</module>
-        <module>org.hydroponics.api</module>
-        <module>org.hydroponics.dao</module>
-        <module>org.hydroponics.web</module -->
+        <module>org.hydroponics.project</module>
+        <module>org.hydroponics.web</module>
     </modules>
     <licenses>
         <license>

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:mvc="http://www.springframework.org/schema/mvc"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+	                        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+                            http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd">
+
+    <!-- enable classpath scanning -->
+    <context:component-scan base-package="org.hydroponics.web" />
+    <mvc:annotation-driven>
+        <mvc:async-support default-timeout="30000"/>
+    </mvc:annotation-driven>
+    <mvc:resources mapping="/resources/**" location="/resources/" cache-period="31556926"/>
+
+    <!-- bean id="CalibreAsyncController"  class="org.hydroponics.web.controller.CalibreAsyncControllertroller">
+        <property name="hydroponicsDao" ref="hydroponicsDao"/>
+    </bean -->
+
+    <!-- bean class="org.springframework.web.context.support.ServletContextPropertyPlaceholderConfigurer"/ -->
+    <!--  bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+           <property name="location">
+             <value>classpath:teklib.properties</value>
+             <value>file:/home/e3a/git/teklib/etc/teklib.properties</value>
+         </property>
+     </bean> -->
+
+    <!-- enable anntotation-driven controllers
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <ref bean="mappingJacksonHttpMessageConverter"/>
+                <ref bean="stringHttpMessageConverter"/>
+                <ref bean="formHttpMessageConverter"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="formHttpMessageConverter"
+          class="org.springframework.http.converter.FormHttpMessageConverter"/>
+
+    <bean id="stringHttpMessageConverter"
+          class="org.springframework.http.converter.StringHttpMessageConverter"/>
+
+    <bean id="mappingJacksonHttpMessageConverter"
+          class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/> -->
+
+    <bean id="jsontemplate" class="org.springframework.web.servlet.view.json.MappingJacksonJsonView"/>
+
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="cache" value="true"/>
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!-- Message source for this context, loaded from localized "messages_xx" files -->
+    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basename" value="/org/hydroponics/web/messages"/>
+    </bean>
+
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="2000000"/>
+    </bean>
+
+    <!-- Start database configuration -->
+    <bean id="DataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://127.0.0.1/hydroponics"/>
+        <property name="username" value="hydroponics"/>
+        <property name="password" value="123"/>
+        <property name="validationQuery"><value>SELECT 1</value></property>
+        <property name="testOnBorrow"><value>true</value></property>
+    </bean>
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="DataSource" />
+    </bean>
+    <!-- End database configuration -->
+
+    <!--  start dao -->
+    <bean name="hydroponicsDao" class="org.hydroponics.dao.JDBCHydroponicsDaoImpl">
+        <property name="jdbcTemplate"><ref bean="jdbcTemplate" /></property>
+    </bean>
+    <!--  end dao -->
+
+    <bean id="RestTemplate" class="org.springframework.web.client.RestTemplate">
+        <property name="messageConverters">
+            <list>
+                <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- bean name="hydroponicsService" class="org.hydroponics.web.service.HydroponicsService">
+        <property name="hydroponicsDao"><ref bean="hydroponicsDao"/></property>
+        <property name="restTemplate"><ref local="RestTemplate"/></property>
+        <property name="sensorUri" value="http://192.168.0.249/"/>
+        <property name="hydroponicsClientHandler" ref="hydroponicsClientHandler"/>
+    </bean -->
+
+    <!-- bean id="readCalibreTimer" class="org.hydroponics.web.service.ReadCalibreTimer">
+        <property name="hydroponicsService">
+            <ref bean="hydroponicsService"/>
+        </property>
+    </bean>
+    <bean id="scheduledTask" class="org.springframework.scheduling.timer.ScheduledTimerTask">
+        <property name="delay" value="300000"/>
+        <property name="period" value="300000"/>
+        <property name="timerTask" ref="readCalibreTimer"/>
+    </bean>
+    <bean id="timerFactory" class="org.springframework.scheduling.timer.TimerFactoryBean">
+        <property name="scheduledTimerTasks">
+            <list>
+                <ref bean="scheduledTask" />
+            </list>
+        </property>
+    </bean -->
+
+
+    <!-- bean id="bayeux" class="org.cometd.server.BayeuxServerImpl" init-method="start" destroy-method="stop">
+        <property name="options">
+            <map>
+                <entry key="logLevel" value="1" />
+                <entry key="timeout" value="15000" />
+            </map>
+        </property>
+    </bean>
+
+    <bean id="echoService" class="org.hydroponics.web.controller.CometController">
+        <constructor-arg><ref local="bayeux" /></constructor-arg>
+    </bean>
+
+    <bean class="org.springframework.web.context.support.ServletContextAttributeExporter">
+        <property name="attributes">
+            <map>
+                <entry key="org.cometd.bayeux">
+                    <ref local="bayeux" />
+                </entry>
+            </map>
+        </property>
+    </bean -->
+
+
+    <!-- mina beans -->
+    <bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
+        <property name="customEditors">
+            <map>
+                <entry key="java.net.SocketAddress">
+                    <bean class="org.apache.mina.integration.beans.InetSocketAddressEditor" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+    <!-- The IoHandler implementation -->
+    <bean id="broadcastHandler" class="org.hydroponics.org.hydroponics.udp.BroadcastProtocolHandler">
+        <property name="hydroponicsDao"><ref bean="hydroponicsDao" /></property>
+        <property name="propertyChangeListener">
+            <list>
+                <ref bean="CalibreAsyncController"/>
+            </list>
+        </property>
+    </bean>
+    <bean id="clientHandler" class="org.hydroponics.org.hydroponics.udp.ClientProtocolHandler" />
+
+    <!-- the IoFilters -->
+    <bean id="executorFilter" class="org.apache.mina.filter.executor.ExecutorFilter"/>
+
+    <bean id="broadcastFilter" class="org.apache.mina.filter.codec.ProtocolCodecFilter">
+        <constructor-arg>
+            <bean class="org.hydroponics.org.hydroponics.udp.BroadcastProtocolCodecFilter" />
+        </constructor-arg>
+    </bean>
+    <bean id="clientFilter" class="org.apache.mina.filter.codec.ProtocolCodecFilter">
+        <constructor-arg>
+            <bean class="org.hydroponics.org.hydroponics.udp.HydroponicsClientFilter" />
+        </constructor-arg>
+    </bean>
+
+    <bean id="loggingFilter" class="org.apache.mina.filter.logging.LoggingFilter" />
+
+    <bean id="broadcastFilterChainBuilder" class="org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder">
+        <property name="filters">
+            <map>
+                <entry key="executor" value-ref="executorFilter"/>
+                <entry key="codecFilter" value-ref="broadcastFilter"/>
+            </map>
+        </property>
+    </bean>
+
+    <!-- The IoAcceptor -->
+    <bean id="broadcastIoAcceptor" class="org.apache.mina.transport.socket.nio.NioDatagramAcceptor" init-method="bind" destroy-method="unbind">
+        <property name="defaultLocalAddress" value=":9999" />
+        <property name="handler" ref="broadcastHandler" />
+        <!-- property name="reuseAddress" value="true" / -->
+        <property name="filterChainBuilder" ref="broadcastFilterChainBuilder" />
+    </bean>
+
+    <bean id="hydroponicsClientHandler" class="org.hydroponics.org.hydroponics.udp.HydroponicsClientHandler">
+        <property name="handler" ref="clientHandler" />
+        <property name="codecFilter" ref="clientFilter"/>
+        <property name="loggingFilter" ref="loggingFilter"/>
+        <property name="broadcastProtocolHandler" ref="broadcastHandler"/>
+    </bean>
+</beans>

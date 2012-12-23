@@ -1,0 +1,95 @@
+/* style.css */
+
+html {
+	background: White;
+	height: 100%;
+}
+
+body {
+	background: White;
+	width: 800px;
+	margin: 0 auto;
+	height: 100%;
+	color: Green;
+	font-family:Tahoma, Arial, sans-serif;
+	font-style: normal;
+	font-size: 10px;
+}
+
+section {
+    border-width:2px; border-style:solid; border-color:#15d93c; -moz-border-radius: 10px; border-radius: 10px; display: block; padding: 20px;
+    -webkit-box-shadow:  0px 0px 5px 2px #15d93c; -moz-box-shadow:  0px 0px 5px 2px #15d93c; box-shadow:  0px 0px 5px 2px #15d93c;
+}
+
+a:link { font-size: 12px; text-decoration:none; font-weight:bold; color:#e00000; }
+a:visited { font-size: 12px; text-decoration:none; font-weight:bold; color:#800000; }
+a:hover { font-size: 12px; text-decoration:none; font-weight:bold; background-color:#ff0; }
+a:active { font-size: 12px; text-decoration:none; font-weight:bold; background-color:#cff; }
+a:focus { font-size: 12px; text-decoration:none; font-weight:bold; background-color:#080; }
+
+/* Header*/
+header { width: 760px; height: 130px; }
+.header_title { vertical-align: top; text-align: right; padding-top: 10px; }
+#header_text { float:right; color:DarkGreen; }
+#logo { border: none; }
+#header_title { font-weight:100; font-size: 22px; }
+#header_name { font-weight:700; font-size: 16px; }
+
+h3 { color:Green; font-weight:normal; font-size: 16px; text-align: center; margin-top: 20px; }
+
+/* Navigation*/
+div#navigation {
+    margin-top: 10px; margin-bottom: 10px; width: 760px; text-align: center;
+    border-top: solid LightGreen 2px;
+    border-bottom: solid LightGreen 2px; }
+
+div#navigation_air {
+    margin-top: 10px; margin-bottom: 10px; width: 760px; text-align: center;
+    border-top: solid LightGreen 2px;
+    border-bottom: solid LightGreen 2px;
+}
+
+div#graph_temp { width: 760px; height:350px; }
+
+/* Line Chart */
+#graph_temp .dygraph-label { font-family: "Georgia", "Verdana", serif }
+#graph_temp .dygraph-title { font-size: 36px; text-shadow:  2px 2px 2px }
+#graph_temp .dygraph-ylabel { font-size: 18px; text-shadow: -2px 2px 2px }
+
+.chart { border-top-color: black; border-left-color: black; border-right-color: black; border-bottom-color: black;
+  border-top-width: 1px; border-left-width: 1px; border-right-width: 1px; border-bottom-width: 1px;
+  border-top-style: dashed; border-left-style: dashed; border-right-style: dashed; border-bottom-style: dashed;
+  margin-top: 5px; margin-right: 5px; margin-bottom: 5px; margin-left: 50px;
+  padding-top: 2px; padding-right: 2px; padding-bottom: 2px; padding-left: 2px
+}
+
+/* Forms */
+#growEdit input,
+#growEdit select,
+#growEdit textarea,
+#growEdit label {
+    font-size:15px;
+    margin-bottom:2px;
+}
+
+/* overlay */
+.graph_overlay {
+    display:none;
+    width:640px; height: 450px;
+    border:10px solid LightGreen;
+    border:10px solid LightGreen;
+    -moz-border-radius:8px;
+    -webkit-border-radius:8px;
+    background-color:White;
+}
+#graph_overlay h1 {
+    margin:-11px;
+    margin-bottom:0px;
+    color:Green;
+    background-color:LightGreen;
+    padding:5px 10px;
+    border:1px solid LightGreen;
+    font-size:20px;
+}
+
+
