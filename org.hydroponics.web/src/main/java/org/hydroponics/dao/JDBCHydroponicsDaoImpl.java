@@ -22,6 +22,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -221,15 +222,15 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
     }
 
     @Override
-    public void saveImage(int grow, InputStream image) {
+    public void saveImage(int grow, MultipartFile image) {
         logger.info("save image");
 
             try {
-            BufferedImage buffImage = ImageIO.read(image);
+            BufferedImage buffImage = ImageIO.read(image.getInputStream());
         this.jdbcTemplate.update("insert into IMAGE (GROW_ID, timestamp, height, width, mimeType, thumbnail, image) values (?, ?, ?, ?, ?, ?, ?)",
                 new Object[] {grow, new Timestamp(System.currentTimeMillis()),
                         buffImage.getHeight(), buffImage.getWidth(),
-                        "image/jpeg", getThumbnail(buffImage), image
+                        "image/jpeg", getThumbnail(buffImage), image.getBytes()
                 });
             } catch(IOException ex) {
                 logger.severe(ex.toString());

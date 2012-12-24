@@ -37,10 +37,11 @@ public class ImageController {
     @Autowired
     private HydroponicsDao hydroponicsDao;
 
-    @RequestMapping(value="/{id}", method = RequestMethod.GET)
-    public String imageHandler(@PathVariable int id, @RequestParam(value="type", required=false) String type, Model modell) {
+    @RequestMapping(value="/{id}.jpg", method = RequestMethod.GET)
+    public String imageHandler(@PathVariable int id, @RequestParam(value="type", required=false) String type, Model model) {
         if(logger.isLoggable(Level.INFO)) logger.info("Get Image: " + id);
-        modell.addAttribute(ImageServlet.IMAGE, hydroponicsDao.getImageById(id, type));
+        model.addAttribute(ImageServlet.IMAGE, hydroponicsDao.getImageById(id, type));
+        System.out.println("model:"+model);
         return "image";
     }
 }

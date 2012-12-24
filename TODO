@@ -3,8 +3,10 @@
 + change image upload size to 5MB (now 2MB)
 + moisture does not update
 
++ image gallery
+
 
 - create new sql script
-- image gallery
+- add Flower/Blooming day to image
 - moisture generates to much values
 

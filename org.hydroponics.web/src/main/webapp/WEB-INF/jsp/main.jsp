@@ -26,11 +26,11 @@
 
         <jsp:include page="includes/data.jsp" flush="true" />
 
-        <ul id="images" class="jcarousel-skin-tango">
+        <div id="images">
             <c:forEach items="${images}" var="image">
-                <li><img src="image/${image}?type=thumb" /></li>
+                <a href="image/${image}.jpg" rel="prettyPhoto[pp_gal]"><img src="image/${image}.jpg?type=thumb" /></a>
             </c:forEach>
-        </ul>
+        </div>
 
         <a id="anchor_temp" rel="#graph_overlay">Temperature/Humidity »</a>
         <a id="anchor_current" rel="#graph_current">Current »</a>
@@ -111,7 +111,9 @@
             }
         });
 
-        jQuery('#images').jcarousel();
+        $("a[rel^='prettyPhoto']").prettyPhoto({
+            social_tools: ''
+        });
     });
 
     (function pollCalibre(){

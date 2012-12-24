@@ -65,7 +65,7 @@ public class AddImage {
             } else {
                 try {
                     int grow = (Integer)this.hydroponicsDao.getCurrentGrow().get(Constants.ID);
-                    this.hydroponicsDao.saveImage(grow, imageEditBean.getFile().getInputStream());
+                    this.hydroponicsDao.saveImage(grow, imageEditBean.getFile());
                     status.setComplete();
                     return Constants.REDIRECT_MAIN;
                 } catch(Exception ex) {

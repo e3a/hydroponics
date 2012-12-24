@@ -15,7 +15,9 @@ package org.hydroponics.model;
 
 import org.hydroponics.web.model.FertilizerEditBean;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
@@ -44,7 +46,7 @@ public interface HydroponicsDao {
 
     public Map<String, Object> getImageById(int id, String type);
     public Collection<Integer> getImages(int grow);
-    public void saveImage(int grow, InputStream image);
+    public void saveImage(int grow, MultipartFile image);
 
     public String getSwitchName(int id);
     public void saveSwitchName(int id, String name);
