@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
 /**
@@ -37,7 +38,8 @@ public class CalibreAsyncController implements PropertyChangeListener {
 
     private static Logger logger = Logger.getLogger(CalibreAsyncController.class.getName());
 
-    private final Collection<DeferredResult<Map<String, Object>>> calibreRequests = new ArrayList<DeferredResult<Map<String, Object>>>();
+    private final Collection<DeferredResult<Map<String, Object>>> calibreRequests =
+            new ConcurrentLinkedQueue<DeferredResult<Map<String, Object>>>();
 
     @RequestMapping("/update")
     @ResponseBody

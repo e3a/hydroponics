@@ -35,7 +35,7 @@
         <td width="360px" align="left"><span id="humidity"><c:out value="${calibre.humidity}" />&nbsp;%</span></td>
     </tr>
     <tr>
-        <td width="360px" align="right"><span id="current"><c:out value="${calibre.current}" />&nbsp;A</span></td>
+        <td width="360px" align="right"><span id="current"><c:out value="${calibre.current}" />&nbsp;W</span></td>
         <td width="20px" align="left"><img src="${pageContext.request.contextPath}/images/electricity.gif"/></td>
         <td width="20px" align="right"><img src="${pageContext.request.contextPath}/images/moisture.png"/></td>
         <td width="360px" align="left"><span id="moisture"><c:out value="${calibre.moisture}"/></span></td>

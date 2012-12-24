@@ -61,7 +61,6 @@
     var current = $("#current");
     var moisture = $("#moisture");
 
-
     $(document).ready(function() {
         $("#anchor_temp").overlay({
             color: '#ccc',
@@ -120,8 +119,9 @@
             if(data.event == "calibre") {
                 temperature.text(new String(data.temperature) + " °C");
                 humidity.text(new String(data.humidity) + " %");
-                current.text(new String(data.current) + " A");
-                moisture.text(new String(data.moisture));
+                current.text(new String(data.current) + " W");
+                moisture.text(new String(data.moisture)+" ");
+
             } else if(data.event == "switches") {
                 if(data.status == 0) {
                     $("#switch"+data.number).attr('src','<c:out value="${pageContext.request.contextPath}"/>/images/redled.png');
