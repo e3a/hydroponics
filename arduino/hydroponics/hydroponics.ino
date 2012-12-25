@@ -25,6 +25,15 @@
  * 
  * ------------------------------------------------------------------------------
  */
+
+/* ------------------------------------------------------------------------------
+   1 Start NTP update
+   2 End NTP update
+   3 Client Connected 
+   4 Client disconnected
+   5 Before update values
+   6 After client udpate
+   ------------------------------------------------------------------------------ */
  
 #include <SPI.h>         
 #include <Ethernet.h>
@@ -50,7 +59,7 @@ const int SWITCHES_INDEX = 2;
 const int SWITCHES_COUNT = 6;
 const unsigned long broadcastIntervall = 60000;
 const unsigned long ntpIntervall = 86400000;
-const unsigned long currentIntervall = 10000;
+const unsigned long currentIntervall = 30000;
 
 const int NTP_PACKET_SIZE= 48;
 const unsigned int localPort = 8888;
@@ -59,6 +68,7 @@ byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing pack
 byte broadcastServer[] = {255, 255, 255, 255};  
 byte timeserver[] = {94,126,19,139};  
 int timezone = 1;
+boolean debug = true;
 
 EthernetServer server(9997);
 EthernetUDP Udp;
@@ -180,20 +190,29 @@ void loop() {
   //Set RTC Clock
   if(lastNtpSync == 0 || lastNtpSync + ntpIntervall < millis()) {
     Serial.println("Update RTC");
+    if(debug) { logger(1);}
     time_t t = processSyncMessage();
     if(t > 0) {
       RTC.set(t);   // set the RTC and the system time to the received value
       setTime(t);          
       lastNtpSync = millis();
     }
+    if(debug) { logger(2);}
   }
   
   //Read Values
   if(lastCurrentUpdate == 0 || lastCurrentUpdate + currentIntervall < millis()) {
+    if(debug) { logger(5);}
     byte h = (dht.readHumidity()+0.5);
     byte t = (dht.readTemperature()+0.5);
     int Irms = ((int)(energyMonitor.calcIrms(EMON_SAMPLES)*10+0.5))*230/10;
-    int moisture = analogRead(PIN_MOISTURE);
+    
+    int moisture = 0;
+    for(int j=0; j<100; j++) {
+      moisture += analogRead(PIN_MOISTURE);
+    }
+    moisture = moisture / 100;
+    
     if(t != lastTemp || h != lastHum || Irms != lastIrms || moisture != lastMoisture) {
       lastTemp = t;
       lastHum = h;
@@ -223,13 +242,16 @@ void loop() {
       Udp.endPacket();
     }
     lastCurrentUpdate = millis();
+    if(debug) { logger(6);}
   }
   
   // listen for incoming clients
   EthernetClient client = server.available();
   if (client) {
+    if(debug) { logger(3);}
     int readCounter = 0;
     boolean query = false;
+    int timeout = 0;
     while (client.connected()) {
       if (client.available()) {
         char c = client.read();
@@ -301,7 +323,17 @@ void loop() {
     delay(1);
     // close the connection:
     client.stop();
+    if(debug) { logger(4);}
   }
+}
+
+void logger(byte code) {
+      packetBuffer[0] ='L';
+      packetBuffer[1] = code;
+    
+      Udp.beginPacket(address, 9999);
+      Udp.write(packetBuffer,2);
+      Udp.endPacket();
 }
 
 time_t processSyncMessage() {
