@@ -76,6 +76,18 @@ public class BroadcastProtocolCodecFilter implements ProtocolCodecFactory {
                     switchEvent.setStatus(in.get());
                     out.write(switchEvent);
 
+                } else if(command == 'L') {
+                    int logCommand = in.get();
+                    switch(logCommand) {
+                        case 1: logger.info("LOG: start ntp update."); break;
+                        case 2: logger.info("LOG: end ntp update.");   break;
+                        case 3: logger.info("LOG: Client Connected .");      break;
+                        case 4: logger.info("LOG: Client Disonnected .");    break;
+                        case 5: logger.info("LOG: Before update values.");   break;
+                        case 6: logger.info("LOG: after update values.");    break;
+                        default: logger.info("unknown log command");
+                    }
+
                 } else {
                     logger.log(Level.SEVERE, "unknown command:"+command);
                 }
