@@ -45,6 +45,7 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
 
     /* start spring properties */
     private JdbcTemplate jdbcTemplate;
+
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -54,6 +55,7 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
     public void afterPropertiesSet() throws Exception {
         //executeScript(JDBCHydroponicsDaoImpl.class.getResourceAsStream("/org/hydroponics/dao/create-database.sql"));
     }
+
     private void executeScript(InputStream inputStream) {
         try {
             BufferedReader d =
@@ -62,19 +64,19 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
             String thisLine, sqlQuery = "";
             while ((thisLine = d.readLine()) != null) {
                 //Skip comments and empty lines
-                if(thisLine.length() > 0 && thisLine.charAt(0) == '-' || thisLine.length() == 0 )
+                if (thisLine.length() > 0 && thisLine.charAt(0) == '-' || thisLine.length() == 0)
                     continue;
 
                 sqlQuery = sqlQuery + " " + thisLine;
 
-                if(sqlQuery.charAt(sqlQuery.length() - 1) == ';') {
+                if (sqlQuery.charAt(sqlQuery.length() - 1) == ';') {
                     logger.log(Level.FINE, sqlQuery);
-                    sqlQuery = sqlQuery.replace(';' , ' '); //Remove the ; since jdbc complains
+                    sqlQuery = sqlQuery.replace(';', ' '); //Remove the ; since jdbc complains
                     jdbcTemplate.execute(sqlQuery);
                     sqlQuery = "";
                 }
             }
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error Creating the SQL Database : " + ex.getMessage(), ex);
         }
     }
@@ -85,18 +87,21 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
                 "select timestamp, temperature, humidity from CALIBRE where GROW_ID=? order by timestamp asc",
                 new Object[]{grow});
     }
+
     @Override
     public SqlRowSet getCurrentList(int grow) {
         return this.jdbcTemplate.queryForRowSet(
                 "select timestamp, current from CALIBRE where GROW_ID=? order by timestamp asc",
                 new Object[]{grow});
     }
+
     @Override
     public SqlRowSet getMoistureList(int grow) {
         return this.jdbcTemplate.queryForRowSet(
                 "select timestamp, moisture from CALIBRE where GROW_ID=? order by timestamp asc",
                 new Object[]{grow});
     }
+
     @Override
     public SqlRowSet getFertilizerList(int grow) {
         return this.jdbcTemplate.queryForRowSet(
@@ -106,7 +111,7 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
 
     @Override
     public Map<String, Object> getCalibre() {
-        if(this.jdbcTemplate.queryForInt("select count(0) from CALIBRE") == 0) {
+        if (this.jdbcTemplate.queryForInt("select count(0) from CALIBRE") == 0) {
             return new HashMap<String, Object>();
         }
         return (Map<String, Object>) this.jdbcTemplate.queryForObject(
@@ -122,47 +127,47 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
 
     @Override
     public Map<String, Object> getCurrentGrow() {
-        if(this.jdbcTemplate.queryForInt("select count(0) from GROW") == 0) {
+        if (this.jdbcTemplate.queryForInt("select count(0) from GROW") == 0) {
             return new HashMap<String, Object>();
         }
         return (Map<String, Object>) this.jdbcTemplate.queryForObject(
-            "select GROW_ID, name, flower, end, plants, result, vegetation from GROW where vegetation = (SELECT MAX(vegetation) FROM GROW)",
-            new GrowMapper());
+                "select GROW_ID, name, flower, end, plants, result, vegetation from GROW where vegetation = (SELECT MAX(vegetation) FROM GROW)",
+                new GrowMapper());
     }
 
     @Override
     public Map<String, Object> getGrowById(final int id) {
         return (Map<String, Object>) this.jdbcTemplate.queryForObject(
-            "select GROW_ID, name, vegetation, flower, end, result, plants from GROW where GROW_ID = ?",
-            new Object[]{new Long(id)}, new GrowMapper());
+                "select GROW_ID, name, vegetation, flower, end, result, plants from GROW where GROW_ID = ?",
+                new Object[]{new Long(id)}, new GrowMapper());
     }
 
     public void saveGrow(Map<String, Object> grow) {
         logger.info(new StringBuffer("save grow:").append(grow).toString());
-        if(grow.get(Constants.ID) != null && ((Integer)grow.get(Constants.ID)) > 0) {
+        if (grow.get(Constants.ID) != null && ((Integer) grow.get(Constants.ID)) > 0) {
             this.jdbcTemplate.update("update GROW set name = ?,  vegetation = ?, flower = ?, end = ?, result = ?, plants = ? where GROW_ID = ?",
-                    new Object[] {
-                        grow.get(Constants.NAME),
-                        (grow.get(Constants.VEGETATION) == null ? null :
-                                new java.sql.Date(((Date)grow.get(Constants.VEGETATION)).getTime())),
-                        (grow.get(Constants.FLOWER_DATE) == null ? null :
-                                new java.sql.Date(((Date)grow.get(Constants.FLOWER_DATE)).getTime())),
-                        (grow.get(Constants.END_DATE) == null ? null :
-                                new java.sql.Date(((Date)grow.get(Constants.END_DATE)).getTime())),
-                        grow.get(Constants.RESULT),
-                        grow.get(Constants.PLANTS),
-                        grow.get(Constants.ID)
+                    new Object[]{
+                            grow.get(Constants.NAME),
+                            (grow.get(Constants.VEGETATION) == null ? null :
+                                    new java.sql.Date(((Date) grow.get(Constants.VEGETATION)).getTime())),
+                            (grow.get(Constants.FLOWER_DATE) == null ? null :
+                                    new java.sql.Date(((Date) grow.get(Constants.FLOWER_DATE)).getTime())),
+                            (grow.get(Constants.END_DATE) == null ? null :
+                                    new java.sql.Date(((Date) grow.get(Constants.END_DATE)).getTime())),
+                            grow.get(Constants.RESULT),
+                            grow.get(Constants.PLANTS),
+                            grow.get(Constants.ID)
                     });
         } else {
             this.jdbcTemplate.update("insert into GROW (name, vegetation, flower, end, result, plants) values (?, ?, ?, ?, ?, ?)",
-                    new Object[] {
+                    new Object[]{
                             grow.get(Constants.NAME),
                             (grow.get(Constants.VEGETATION) == null ? null :
-                                    new java.sql.Date(((Date)grow.get(Constants.VEGETATION)).getTime())),
+                                    new java.sql.Date(((Date) grow.get(Constants.VEGETATION)).getTime())),
                             (grow.get(Constants.FLOWER_DATE) == null ? null :
-                                    new java.sql.Date(((Date)grow.get(Constants.FLOWER_DATE)).getTime())),
+                                    new java.sql.Date(((Date) grow.get(Constants.FLOWER_DATE)).getTime())),
                             (grow.get(Constants.END_DATE) == null ? null :
-                                    new java.sql.Date(((Date)grow.get(Constants.END_DATE)).getTime())),
+                                    new java.sql.Date(((Date) grow.get(Constants.END_DATE)).getTime())),
                             grow.get(Constants.RESULT),
                             grow.get(Constants.PLANTS)
                     });
@@ -180,13 +185,13 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
     public void saveCalibre(CalibreEvent calibreEvent) {
         logger.info(new StringBuffer("save calibreEvent:").append(calibreEvent).toString());
         Map<String, Object> currentGrow = getCurrentGrow();
-        if(currentGrow!=null) {
-        this.jdbcTemplate.update("insert into CALIBRE (timestamp, temperature, humidity, current, moisture, GROW_ID) values (?, ?, ?, ?, ?, ?)",
-                new Object[] {new Timestamp(System.currentTimeMillis()),
-                              calibreEvent.getTemperature(), calibreEvent.getHumidity(),
-                              calibreEvent.getCurrent(), calibreEvent.getMoisture(),
-                              (Integer)currentGrow.get(Constants.ID)
-            });
+        if (currentGrow != null) {
+            this.jdbcTemplate.update("insert into CALIBRE (timestamp, temperature, humidity, current, moisture, GROW_ID) values (?, ?, ?, ?, ?, ?)",
+                    new Object[]{new Timestamp(System.currentTimeMillis()),
+                            calibreEvent.getTemperature(), calibreEvent.getHumidity(),
+                            calibreEvent.getCurrent(), calibreEvent.getMoisture(),
+                            (Integer) currentGrow.get(Constants.ID)
+                    });
         } else {
             logger.info("no current grow, not saving data.");
         }
@@ -196,7 +201,7 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
     public void saveFertilizer(FertilizerEditBean fertilizer) {
         logger.info(new StringBuffer("save fertillizer:").append(fertilizer).toString());
         this.jdbcTemplate.update("insert into FERTILIZER (timestamp, fertilizer, GROW_ID) values (?, ?, ?)",
-                new Object[] {new Timestamp(fertilizer.getTimestamp().getTime()),
+                new Object[]{new Timestamp(fertilizer.getTimestamp().getTime()),
                         fertilizer.getFertilizer(), fertilizer.getGrow()
                 });
     }
@@ -204,7 +209,7 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
     @Override
     @SuppressWarnings("all")
     public Map<String, Object> getImageById(int id, String type) {
-        if("thumb".equals(type)) {
+        if ("thumb".equals(type)) {
             return (Map<String, Object>) this.jdbcTemplate.queryForObject(
                     "select IMAGE_ID, thumbnail, mimeType from IMAGE where IMAGE_ID = ?", new Object[]{id},
                     new ImageMapper());
@@ -225,37 +230,38 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
     public void saveImage(int grow, MultipartFile image) {
         logger.info("save image");
 
-            try {
+        try {
             BufferedImage buffImage = ImageIO.read(image.getInputStream());
-        this.jdbcTemplate.update("insert into IMAGE (GROW_ID, timestamp, height, width, mimeType, thumbnail, image) values (?, ?, ?, ?, ?, ?, ?)",
-                new Object[] {grow, new Timestamp(System.currentTimeMillis()),
-                        buffImage.getHeight(), buffImage.getWidth(),
-                        "image/jpeg", getThumbnail(buffImage), image.getBytes()
-                });
-            } catch(IOException ex) {
-                logger.severe(ex.toString());
-            }
+            this.jdbcTemplate.update("insert into IMAGE (GROW_ID, timestamp, height, width, mimeType, thumbnail, image) values (?, ?, ?, ?, ?, ?, ?)",
+                    new Object[]{grow, new Timestamp(System.currentTimeMillis()),
+                            buffImage.getHeight(), buffImage.getWidth(),
+                            "image/jpeg", getThumbnail(buffImage), image.getBytes()
+                    });
+        } catch (IOException ex) {
+            logger.severe(ex.toString());
+        }
     }
+
     public byte[] getThumbnail(BufferedImage buffImage) throws IOException {
         BufferedImage pDestImage = new BufferedImage(Constants.THUMBNAIL_WIDTH, Constants.THUMBNAIL_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
 
         AffineTransform transform = new AffineTransform();
-        transform.scale((float)Constants.THUMBNAIL_WIDTH/(float)buffImage.getWidth(),
-                (float)Constants.THUMBNAIL_HEIGHT/(float)buffImage.getHeight());
+        transform.scale((float) Constants.THUMBNAIL_WIDTH / (float) buffImage.getWidth(),
+                (float) Constants.THUMBNAIL_HEIGHT / (float) buffImage.getHeight());
 
-        Graphics2D g = (Graphics2D)pDestImage.getGraphics();
+        Graphics2D g = (Graphics2D) pDestImage.getGraphics();
 
         //set the rendering hints for a good thumbnail image
         Map m = g.getRenderingHints();
         m.put(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
         m.put(RenderingHints.KEY_ALPHA_INTERPOLATION,
-                RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY );
+                RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
         m.put(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BILINEAR );
+                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         m.put(RenderingHints.KEY_RENDERING,
-                RenderingHints.VALUE_RENDER_QUALITY );
-        g.setRenderingHints( m );
+                RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHints(m);
 
         g.drawImage(buffImage, transform, null);
         g.dispose();
@@ -268,22 +274,23 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
     @Override
     public String getSwitchName(int id) {
         List<String> names = this.jdbcTemplate.queryForList("select name from SWITCH where SWITCH_ID = ?",
-                new Object[] { id }, String.class);
+                new Object[]{id}, String.class);
         if (names.isEmpty()) {
             return new String();
         } else {
             return names.get(0);
         }
     }
+
     @Override
     public void saveSwitchName(int id, String name) {
         logger.info(new StringBuffer("save switch name:").append(id).append(":").append(name).toString());
-        if(this.jdbcTemplate.queryForInt("select count(0) from SWITCH where SWITCH_ID = ?", id) == 1) {
+        if (this.jdbcTemplate.queryForInt("select count(0) from SWITCH where SWITCH_ID = ?", id) == 1) {
             this.jdbcTemplate.update("update SWITCH set SWITCH_ID = ?,  name = ? where SWITCH_ID = ?",
-                    new Object[] { id, name, id });
+                    new Object[]{id, name, id});
         } else {
             this.jdbcTemplate.update("insert into SWITCH (SWITCH_ID, name) values (?, ?)",
-                    new Object[] { id, name });
+                    new Object[]{id, name});
         }
     }
 
@@ -298,22 +305,23 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
             grow.put(Constants.RESULT, rs.getInt("result"));
             grow.put(Constants.VEGETATION, rs.getDate("vegetation"));
 
-            if(rs.getDate("flower") != null && rs.getDate("vegetation") != null) {
+            if (rs.getDate("flower") != null && rs.getDate("vegetation") != null) {
                 grow.put("vegetationDays", daysBetween(rs.getDate("vegetation"), rs.getDate("flower")));
-            } else if(rs.getDate("flower") == null && rs.getDate("vegetation") != null) {
+            } else if (rs.getDate("flower") == null && rs.getDate("vegetation") != null) {
                 grow.put("vegetationDays", daysBetween(rs.getDate("vegetation"), new Date(System.currentTimeMillis())));
             }
-            if(rs.getDate("end") != null && rs.getDate("flower") != null) {
+            if (rs.getDate("end") != null && rs.getDate("flower") != null) {
                 grow.put("flowerDays", daysBetween(rs.getDate("flower"), rs.getDate("end")));
-            } else if(rs.getDate("end") == null && rs.getDate("flower") != null) {
+            } else if (rs.getDate("end") == null && rs.getDate("flower") != null) {
                 grow.put("flowerDays", daysBetween(rs.getDate("flower"), new Date(System.currentTimeMillis())));
             }
 
             return grow;
         }
     }
-    private static int daysBetween(Date d1, Date d2){
-        return (int)( (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+
+    private static int daysBetween(Date d1, Date d2) {
+        return (int) ((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
     }
 
     private static final class CalibreMapper implements RowMapper {

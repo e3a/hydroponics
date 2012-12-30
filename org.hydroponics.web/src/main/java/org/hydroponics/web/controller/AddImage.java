@@ -58,26 +58,26 @@ public class AddImage {
                 .append("\n\tSessionState:").append(status)
                 .append("\n\tFormAction:").append(formAction).toString());
 
-        if(formAction != null && formAction.equals(Constants.ACTION_SUBMIT)) {
+        if (formAction != null && formAction.equals(Constants.ACTION_SUBMIT)) {
             imageValidator.validate(imageEditBean, result);
             if (result.hasErrors()) {
                 return Constants.PAGE_ADD_IMAGE;
             } else {
                 try {
-                    int grow = (Integer)this.hydroponicsDao.getCurrentGrow().get(Constants.ID);
+                    int grow = (Integer) this.hydroponicsDao.getCurrentGrow().get(Constants.ID);
                     this.hydroponicsDao.saveImage(grow, imageEditBean.getFile());
                     status.setComplete();
                     return Constants.REDIRECT_MAIN;
-                } catch(Exception ex) {
+                } catch (Exception ex) {
                     logger.log(Level.SEVERE, ex.toString(), ex);
                     throw new RuntimeException(ex);
                 }
             }
-        } else if(formAction != null && formAction.equals(Constants.ACTION_CANCEL)) {
+        } else if (formAction != null && formAction.equals(Constants.ACTION_CANCEL)) {
             status.setComplete();
             return Constants.REDIRECT_MAIN;
         } else {
-            throw new RuntimeException("unknown form action:"+formAction);
+            throw new RuntimeException("unknown form action:" + formAction);
         }
     }
 }

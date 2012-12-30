@@ -57,7 +57,7 @@ public class AddFertilizer {
 
         FertilizerEditBean fertilizerEditBean = new FertilizerEditBean();
         fertilizerEditBean.setTimestamp(new Date(System.currentTimeMillis()));
-        fertilizerEditBean.setGrow((Integer)hydroponicsDao.getCurrentGrow().get(Constants.ID));
+        fertilizerEditBean.setGrow((Integer) hydroponicsDao.getCurrentGrow().get(Constants.ID));
         model.addAttribute(fertilizerEditBean);
     }
 
@@ -68,20 +68,20 @@ public class AddFertilizer {
                 .append("\n\tSessionState:").append(status)
                 .append("\n\tFormAction:").append(formAction).toString());
 
-        if(formAction != null && formAction.equals(Constants.ACTION_SUBMIT)) {
+        if (formAction != null && formAction.equals(Constants.ACTION_SUBMIT)) {
             fertilizerValidator.validate(fertilizerEditBean, result);
             if (result.hasErrors()) {
                 return Constants.PAGE_ADD_FERTILIZER;
             } else {
-               this.hydroponicsDao.saveFertilizer(fertilizerEditBean);
+                this.hydroponicsDao.saveFertilizer(fertilizerEditBean);
                 status.setComplete();
                 return Constants.REDIRECT_MAIN;
             }
-        } else if(formAction != null && formAction.equals(Constants.ACTION_CANCEL)) {
+        } else if (formAction != null && formAction.equals(Constants.ACTION_CANCEL)) {
             status.setComplete();
             return Constants.REDIRECT_MAIN;
         } else {
-            throw new RuntimeException("unknown form action:"+formAction);
+            throw new RuntimeException("unknown form action:" + formAction);
         }
     }
 }

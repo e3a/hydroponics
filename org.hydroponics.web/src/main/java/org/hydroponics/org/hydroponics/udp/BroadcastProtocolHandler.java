@@ -38,55 +38,60 @@ public class BroadcastProtocolHandler extends IoHandlerAdapter {
     private static Logger logger = Logger.getLogger(BroadcastProtocolHandler.class.getName());
 
     private List<PropertyChangeListener> propertyChangeListener;
+
     public void setPropertyChangeListener(List<PropertyChangeListener> propertyChangeListener) {
         this.propertyChangeListener = propertyChangeListener;
     }
 
     private HydroponicsDao hydroponicsDao;
+
     public void setHydroponicsDao(HydroponicsDao hydroponicsDao) {
         this.hydroponicsDao = hydroponicsDao;
     }
 
     private InetAddress remoteAddress;
+
     protected InetAddress getRemoteAddress() {
         return remoteAddress;
     }
 
     @Override
-    public void exceptionCaught( IoSession session, Throwable cause ) throws Exception {
+    public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
         logger.log(Level.WARNING, new StringBuffer(BroadcastProtocolHandler.class.getSimpleName())
                 .append(".exception[").append(cause.toString()).append("]").toString(), cause);
         session.close(true);
     }
+
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
-        if(message != null) {
+        if (message != null) {
             if (logger.isLoggable(Level.INFO)) {
                 logger.info(new StringBuffer(BroadcastProtocolHandler.class.getSimpleName())
                         .append(".message IP:").append(session.getRemoteAddress())
                         .append(" - ").append(message).toString());
             }
-            if(message instanceof Date) {
-                InetSocketAddress socketAddress = (InetSocketAddress)session.getRemoteAddress();
+            if (message instanceof Date) {
+                InetSocketAddress socketAddress = (InetSocketAddress) session.getRemoteAddress();
                 remoteAddress = socketAddress.getAddress();
                 logger.info(message.toString());
 
-            } else if(message instanceof CalibreEvent) {
-                hydroponicsDao.saveCalibre((CalibreEvent)message);
-                if(propertyChangeListener != null) {
-                    for(PropertyChangeListener listener : propertyChangeListener) {
+            } else if (message instanceof CalibreEvent) {
+                hydroponicsDao.saveCalibre((CalibreEvent) message);
+                if (propertyChangeListener != null) {
+                    for (PropertyChangeListener listener : propertyChangeListener) {
                         listener.propertyChange(new PropertyChangeEvent(this, Constants.CALIBRE, null, message));
                     }
                 }
-            } else if(message instanceof SwitchEvent) {
-                if(propertyChangeListener != null) {
-                    for(PropertyChangeListener listener : propertyChangeListener) {
+            } else if (message instanceof SwitchEvent) {
+                if (propertyChangeListener != null) {
+                    for (PropertyChangeListener listener : propertyChangeListener) {
                         listener.propertyChange(new PropertyChangeEvent(this, Constants.SWITCHES, null, message));
                     }
                 }
             }
         }
     }
+
     @Override
     public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
         if (logger.isLoggable(Level.INFO)) {

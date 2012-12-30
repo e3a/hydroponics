@@ -9,17 +9,17 @@
                             http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd">
 
     <!-- enable classpath scanning -->
-    <context:component-scan base-package="org.hydroponics.web" />
+    <context:component-scan base-package="org.hydroponics.web"/>
     <mvc:annotation-driven>
         <mvc:async-support default-timeout="30000"/>
     </mvc:annotation-driven>
     <mvc:resources mapping="/resources/**" location="/resources/" cache-period="31556926"/>
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-           <property name="location">
-             <value>file:etc/hydroponics.properties</value>
-         </property>
-     </bean>
+        <property name="location">
+            <value>file:etc/hydroponics.properties</value>
+        </property>
+    </bean>
 
     <bean id="jsontemplate" class="org.springframework.web.servlet.view.json.MappingJacksonJsonView"/>
 
@@ -45,17 +45,23 @@
         <property name="url" value="${org.hydrophonics.database.uri}"/>
         <property name="username" value="${org.hydrophonics.database.user}"/>
         <property name="password" value="${org.hydrophonics.database.pass}"/>
-        <property name="validationQuery"><value>SELECT 1</value></property>
-        <property name="testOnBorrow"><value>true</value></property>
+        <property name="validationQuery">
+            <value>SELECT 1</value>
+        </property>
+        <property name="testOnBorrow">
+            <value>true</value>
+        </property>
     </bean>
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-        <property name="dataSource" ref="DataSource" />
+        <property name="dataSource" ref="DataSource"/>
     </bean>
     <!-- End database configuration -->
 
     <!--  start dao -->
     <bean name="hydroponicsDao" class="org.hydroponics.dao.JDBCHydroponicsDaoImpl">
-        <property name="jdbcTemplate"><ref bean="jdbcTemplate" /></property>
+        <property name="jdbcTemplate">
+            <ref bean="jdbcTemplate"/>
+        </property>
     </bean>
     <!--  end dao -->
 
@@ -72,7 +78,7 @@
         <property name="customEditors">
             <map>
                 <entry key="java.net.SocketAddress">
-                    <bean class="org.apache.mina.integration.beans.InetSocketAddressEditor" />
+                    <bean class="org.apache.mina.integration.beans.InetSocketAddressEditor"/>
                 </entry>
             </map>
         </property>
@@ -80,30 +86,32 @@
 
     <!-- The IoHandler implementation -->
     <bean id="broadcastHandler" class="org.hydroponics.org.hydroponics.udp.BroadcastProtocolHandler">
-        <property name="hydroponicsDao"><ref bean="hydroponicsDao" /></property>
+        <property name="hydroponicsDao">
+            <ref bean="hydroponicsDao"/>
+        </property>
         <property name="propertyChangeListener">
             <list>
                 <ref bean="CalibreAsyncController"/>
             </list>
         </property>
     </bean>
-    <bean id="clientHandler" class="org.hydroponics.org.hydroponics.udp.ClientProtocolHandler" />
+    <bean id="clientHandler" class="org.hydroponics.org.hydroponics.udp.ClientProtocolHandler"/>
 
     <!-- the IoFilters -->
     <bean id="executorFilter" class="org.apache.mina.filter.executor.ExecutorFilter"/>
 
     <bean id="broadcastFilter" class="org.apache.mina.filter.codec.ProtocolCodecFilter">
         <constructor-arg>
-            <bean class="org.hydroponics.org.hydroponics.udp.BroadcastProtocolCodecFilter" />
+            <bean class="org.hydroponics.org.hydroponics.udp.BroadcastProtocolCodecFilter"/>
         </constructor-arg>
     </bean>
     <bean id="clientFilter" class="org.apache.mina.filter.codec.ProtocolCodecFilter">
         <constructor-arg>
-            <bean class="org.hydroponics.org.hydroponics.udp.HydroponicsClientFilter" />
+            <bean class="org.hydroponics.org.hydroponics.udp.HydroponicsClientFilter"/>
         </constructor-arg>
     </bean>
 
-    <bean id="loggingFilter" class="org.apache.mina.filter.logging.LoggingFilter" />
+    <bean id="loggingFilter" class="org.apache.mina.filter.logging.LoggingFilter"/>
 
     <bean id="broadcastFilterChainBuilder" class="org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder">
         <property name="filters">
@@ -115,14 +123,15 @@
     </bean>
 
     <!-- The IoAcceptor -->
-    <bean id="broadcastIoAcceptor" class="org.apache.mina.transport.socket.nio.NioDatagramAcceptor" init-method="bind" destroy-method="unbind">
-        <property name="defaultLocalAddress" value=":9999" />
-        <property name="handler" ref="broadcastHandler" />
-        <property name="filterChainBuilder" ref="broadcastFilterChainBuilder" />
+    <bean id="broadcastIoAcceptor" class="org.apache.mina.transport.socket.nio.NioDatagramAcceptor" init-method="bind"
+          destroy-method="unbind">
+        <property name="defaultLocalAddress" value=":9999"/>
+        <property name="handler" ref="broadcastHandler"/>
+        <property name="filterChainBuilder" ref="broadcastFilterChainBuilder"/>
     </bean>
 
     <bean id="hydroponicsClientHandler" class="org.hydroponics.org.hydroponics.udp.HydroponicsClientHandler">
-        <property name="handler" ref="clientHandler" />
+        <property name="handler" ref="clientHandler"/>
         <property name="codecFilter" ref="clientFilter"/>
         <property name="loggingFilter" ref="loggingFilter"/>
         <property name="broadcastProtocolHandler" ref="broadcastHandler"/>

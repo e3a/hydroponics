@@ -21,9 +21,9 @@ import org.springframework.validation.Errors;
 public class SchedulesValidator {
     public void validate(SchedulesEditBean schedulesEditBean, Errors errors) {
         String name = schedulesEditBean.getName();
-        if(name == null) {
+        if (name == null) {
             errors.rejectValue("name", "required", "required");
-        } else if(name.length() > 40) {
+        } else if (name.length() > 40) {
             errors.rejectValue("name", "Long", "switch.name.toLong");
         }
     }

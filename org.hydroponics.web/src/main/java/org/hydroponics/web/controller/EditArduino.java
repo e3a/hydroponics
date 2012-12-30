@@ -53,7 +53,7 @@ public class EditArduino {
                 .append("\n\tSessionState:").append(status)
                 .append("\n\tFormAction:").append(formAction).toString());
 
-        if(formAction != null && formAction.equals(Constants.ACTION_SUBMIT)) {
+        if (formAction != null && formAction.equals(Constants.ACTION_SUBMIT)) {
             controllerValidator.validate(controllerEditBean, result);
             if (result.hasErrors()) {
                 return "controller";
@@ -62,11 +62,11 @@ public class EditArduino {
                 status.setComplete();
                 return Constants.REDIRECT_MAIN;
             }
-        } else if(formAction != null && formAction.equals(Constants.ACTION_CANCEL)) {
+        } else if (formAction != null && formAction.equals(Constants.ACTION_CANCEL)) {
             status.setComplete();
             return Constants.REDIRECT_MAIN;
         } else {
-            throw new RuntimeException("unknown form action:"+formAction);
+            throw new RuntimeException("unknown form action:" + formAction);
         }
     }
 }

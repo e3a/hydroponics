@@ -42,7 +42,7 @@ public class HydroponicsController {
     @Autowired
     private HydroponicsClientHandler hydroponicsClientHandler;
 
-    @RequestMapping(value="/main.htm")
+    @RequestMapping(value = "/main.htm")
     public ModelAndView overviewHandler() {
 
         logger.info("/main.htm");
@@ -53,11 +53,11 @@ public class HydroponicsController {
         mav.addObject(Constants.CALIBRE, hydroponicsDao.getCalibre());
 
         List<Map<String, Object>> switches = hydroponicsClientHandler.getStatus();
-        if(switches != null) {
-            for(Map<String, Object> s : switches) {
-                Integer id = (Integer)s.get(Constants.NUMBER);
+        if (switches != null) {
+            for (Map<String, Object> s : switches) {
+                Integer id = (Integer) s.get(Constants.NUMBER);
                 String name = hydroponicsDao.getSwitchName(id);
-                s.put(Constants.NAME, (name==null||name.isEmpty()?"Switch "+id:name));
+                s.put(Constants.NAME, (name == null || name.isEmpty() ? "Switch " + id : name));
             }
         } else {
             switches = new ArrayList<Map<String, Object>>();
@@ -65,12 +65,13 @@ public class HydroponicsController {
         logger.log(Level.INFO, new StringBuffer("switches:").append(switches).toString());
 
         mav.addObject(Constants.SWITCHES, switches);
-        if(grow != null && grow.containsKey(Constants.ID)) {
-            mav.addObject(Constants.IMAGES, hydroponicsDao.getImages((Integer)grow.get(Constants.ID)));
+        if (grow != null && grow.containsKey(Constants.ID)) {
+            mav.addObject(Constants.IMAGES, hydroponicsDao.getImages((Integer) grow.get(Constants.ID)));
         }
         return mav;
     }
-    @RequestMapping(value="/list.htm")
+
+    @RequestMapping(value = "/list.htm")
     public ModelAndView listHandler() {
 
         logger.info("/list.htm");
@@ -81,15 +82,15 @@ public class HydroponicsController {
         return mav;
     }
 
-    @RequestMapping(value="/grow.htm")
+    @RequestMapping(value = "/grow.htm")
     public ModelAndView growHandler(@RequestParam("id") int growId) {
-       logger.info("/grow.htm");
+        logger.info("/grow.htm");
         ModelAndView mav = new ModelAndView();
         mav.addObject(Constants.GROW, hydroponicsDao.getGrowById(growId));
         return mav;
     }
 
-    @RequestMapping(value="/calibre.csv")
+    @RequestMapping(value = "/calibre.csv")
     public ModelAndView calibreHandler(@RequestParam("growId") int growId) {
 
         logger.info("/calibre.csv");
@@ -99,7 +100,7 @@ public class HydroponicsController {
         return mav;
     }
 
-    @RequestMapping(value="/current.csv")
+    @RequestMapping(value = "/current.csv")
     public ModelAndView currentHandler(@RequestParam("growId") int growId) {
 
         logger.info("/current.csv");
@@ -109,7 +110,7 @@ public class HydroponicsController {
         return mav;
     }
 
-    @RequestMapping(value="/moisture.csv")
+    @RequestMapping(value = "/moisture.csv")
     public ModelAndView moistureHandler(@RequestParam("growId") int growId) {
 
         logger.info("/moisture.csv");
@@ -119,7 +120,7 @@ public class HydroponicsController {
         return mav;
     }
 
-    @RequestMapping(value="/fertilizer.csv")
+    @RequestMapping(value = "/fertilizer.csv")
     public ModelAndView fertilizerHandler(@RequestParam("growId") int growId) {
 
         logger.info("/fertilizer.csv");

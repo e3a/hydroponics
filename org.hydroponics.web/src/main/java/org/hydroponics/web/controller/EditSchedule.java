@@ -55,7 +55,7 @@ public class EditSchedule {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public void setupNewForm(@RequestParam(value="id", required=false) Integer id, Model model) {
+    public void setupNewForm(@RequestParam(value = "id", required = false) Integer id, Model model) {
         logger.info(new StringBuffer("EditSwitch: id:").append(id).toString());
 
         SchedulesEditBean bean = hydroponicsClientHandler.getSwitch(id);
@@ -72,34 +72,34 @@ public class EditSchedule {
                 .append("\n\tSessionState:").append(status)
                 .append("\n\tFormAction:").append(formAction).toString());
 
-        if(formAction != null && formAction.equals(Constants.ACTION_SUBMIT)) {
+        if (formAction != null && formAction.equals(Constants.ACTION_SUBMIT)) {
             schedulesValidator.validate(schedulesEditBean, result);
             if (result.hasErrors()) {
                 return Constants.PAGE_EDIT_SCHEDULES;
             } else {
-                logger.info("SAVE:"+schedulesEditBean);
-                if(schedulesEditBean.getName() != null) {
+                logger.info("SAVE:" + schedulesEditBean);
+                if (schedulesEditBean.getName() != null) {
                     hydroponicsDao.saveSwitchName(schedulesEditBean.getNumber(), schedulesEditBean.getName());
                 }
 
                 SchedulesEditBean oldSchedule = hydroponicsClientHandler.getSwitch(schedulesEditBean.getNumber());
-                if(schedulesEditBean.getMode() != oldSchedule.getMode() ||
-                   ! schedulesEditBean.getSchedules().equals(oldSchedule.getSchedules())) {
+                if (schedulesEditBean.getMode() != oldSchedule.getMode() ||
+                        !schedulesEditBean.getSchedules().equals(oldSchedule.getSchedules())) {
 
                     logger.info("Schedules changed.");
                     hydroponicsClientHandler.saveSwitch(schedulesEditBean);
 
-                } else if(logger.isLoggable(Level.INFO)) {
+                } else if (logger.isLoggable(Level.INFO)) {
                     logger.info("Schedules unchanged.");
                 }
 
                 status.setComplete();
                 return Constants.REDIRECT_MAIN;
             }
-        } else if(formAction != null && formAction.equals(Constants.ACTION_CANCEL)) {
+        } else if (formAction != null && formAction.equals(Constants.ACTION_CANCEL)) {
             return Constants.REDIRECT_MAIN;
         } else {
-            throw new RuntimeException("unknown form action:"+formAction);
+            throw new RuntimeException("unknown form action:" + formAction);
         }
     }
 }

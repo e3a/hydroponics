@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 /**
  * Long Polling controller for the Calibre
  */
-@Controller(value="CalibreAsyncController")
+@Controller(value = "CalibreAsyncController")
 public class CalibreAsyncController implements PropertyChangeListener {
 
     private static Logger logger = Logger.getLogger(CalibreAsyncController.class.getName());
@@ -62,7 +62,7 @@ public class CalibreAsyncController implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-        if(propertyChangeEvent.getNewValue() instanceof CalibreEvent) {
+        if (propertyChangeEvent.getNewValue() instanceof CalibreEvent) {
             logger.fine("updateResults:" + this.calibreRequests.size());
             Map<String, Object> map = new HashMap<String, Object>();
             map.put(Constants.EVENT, Constants.CALIBRE);
@@ -70,21 +70,21 @@ public class CalibreAsyncController implements PropertyChangeListener {
             map.put(Constants.HUMIDITY, ((CalibreEvent) propertyChangeEvent.getNewValue()).getHumidity());
             map.put(Constants.CURRENT, ((CalibreEvent) propertyChangeEvent.getNewValue()).getCurrent());
             map.put(Constants.MOISTURE, ((CalibreEvent) propertyChangeEvent.getNewValue()).getMoisture());
-            for(DeferredResult<Map<String, Object>> calibreRequest : calibreRequests) {
+            for (DeferredResult<Map<String, Object>> calibreRequest : calibreRequests) {
                 calibreRequest.setResult(map);
             }
-        } else if(propertyChangeEvent.getNewValue() instanceof SwitchEvent) {
+        } else if (propertyChangeEvent.getNewValue() instanceof SwitchEvent) {
             logger.fine("updateResults:" + this.calibreRequests.size());
             Map<String, Object> map = new HashMap<String, Object>();
             map.put(Constants.EVENT, Constants.SWITCHES);
             map.put(Constants.NUMBER, ((SwitchEvent) propertyChangeEvent.getNewValue()).getNumber());
             map.put(Constants.STATUS, ((SwitchEvent) propertyChangeEvent.getNewValue()).getStatus());
             map.put(Constants.MODE, ((SwitchEvent) propertyChangeEvent.getNewValue()).getMode());
-            for(DeferredResult<Map<String, Object>> calibreRequest : calibreRequests) {
+            for (DeferredResult<Map<String, Object>> calibreRequest : calibreRequests) {
                 calibreRequest.setResult(map);
             }
         } else {
-            logger.info("unknown event: "+propertyChangeEvent.getNewValue());
+            logger.info("unknown event: " + propertyChangeEvent.getNewValue());
         }
     }
 }

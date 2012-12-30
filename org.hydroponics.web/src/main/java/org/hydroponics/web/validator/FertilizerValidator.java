@@ -28,7 +28,7 @@ public class FertilizerValidator implements Validator {
 
     @Override
     public void validate(Object object, Errors errors) {
-        FertilizerEditBean fertilizer = (FertilizerEditBean)object;
+        FertilizerEditBean fertilizer = (FertilizerEditBean) object;
         int f = fertilizer.getFertilizer();
         if (f == 0) {
             errors.rejectValue("fertilizer", "required", "required");

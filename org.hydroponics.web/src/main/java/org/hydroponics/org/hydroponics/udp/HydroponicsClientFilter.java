@@ -25,6 +25,7 @@ import java.util.logging.Logger;
  */
 public class HydroponicsClientFilter implements ProtocolCodecFactory {
     private static Logger logger = Logger.getLogger(HydroponicsClientFilter.class.getName());
+
     @Override
     public ProtocolEncoder getEncoder(IoSession arg0) throws Exception {
         return new ProtocolEncoder() {
@@ -34,8 +35,9 @@ public class HydroponicsClientFilter implements ProtocolCodecFactory {
                     logger.info(new StringBuffer(HydroponicsClientFilter.class.getSimpleName())
                             .append(".encode[").append(message).append("]").toString());
                 }
-                out.write(IoBuffer.wrap((byte[])message));
+                out.write(IoBuffer.wrap((byte[]) message));
             }
+
             @Override
             public void dispose(IoSession session) throws Exception {
                 if (logger.isLoggable(Level.FINE)) {
@@ -45,6 +47,7 @@ public class HydroponicsClientFilter implements ProtocolCodecFactory {
             }
         };
     }
+
     @Override
     public ProtocolDecoder getDecoder(IoSession arg0) throws Exception {
         return new CumulativeProtocolDecoder() {
@@ -55,7 +58,7 @@ public class HydroponicsClientFilter implements ProtocolCodecFactory {
                             .append(".decode[").append(session).append("]").toString());
                 }
                 final int messageLength = in.get();
-                if(in.remaining() == messageLength) {
+                if (in.remaining() == messageLength) {
                     byte arr[] = new byte[messageLength];
                     in.get(arr);
                     out.write(arr);

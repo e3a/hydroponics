@@ -28,6 +28,7 @@ import java.util.logging.Logger;
  */
 public class BroadcastProtocolCodecFilter implements ProtocolCodecFactory {
     private static Logger logger = Logger.getLogger(BroadcastProtocolCodecFilter.class.getName());
+
     @Override
     public ProtocolEncoder getEncoder(IoSession arg0) throws Exception {
         return new ProtocolEncoder() {
@@ -38,6 +39,7 @@ public class BroadcastProtocolCodecFilter implements ProtocolCodecFactory {
                             .append(".encode[").append(message).append("]").toString());
                 }
             }
+
             @Override
             public void dispose(IoSession session) throws Exception {
                 if (logger.isLoggable(Level.FINE)) {
@@ -47,6 +49,7 @@ public class BroadcastProtocolCodecFilter implements ProtocolCodecFactory {
             }
         };
     }
+
     @Override
     public ProtocolDecoder getDecoder(IoSession arg0) throws Exception {
         return new ProtocolDecoder() {
@@ -57,11 +60,11 @@ public class BroadcastProtocolCodecFilter implements ProtocolCodecFactory {
                             .append(".decode[").append(session).append("]").toString());
                 }
                 byte command = in.get();
-                if(command == 'C') {
+                if (command == 'C') {
                     long timestamp = in.getUnsignedInt();
-                    out.write(new Date(timestamp*1000));
+                    out.write(new Date(timestamp * 1000));
 
-                } else if(command == 'V') {
+                } else if (command == 'V') {
                     CalibreEvent calibreEvent = new CalibreEvent();
                     calibreEvent.setTemperature(in.get());
                     calibreEvent.setHumidity(in.get());
@@ -69,29 +72,43 @@ public class BroadcastProtocolCodecFilter implements ProtocolCodecFactory {
                     calibreEvent.setMoisture(in.getUnsignedShort());
                     out.write(calibreEvent);
 
-                } else if(command == 'S') {
+                } else if (command == 'S') {
                     SwitchEvent switchEvent = new SwitchEvent();
                     switchEvent.setNumber(in.get());
                     switchEvent.setMode(in.get());
                     switchEvent.setStatus(in.get());
                     out.write(switchEvent);
 
-                } else if(command == 'L') {
+                } else if (command == 'L') {
                     int logCommand = in.get();
-                    switch(logCommand) {
-                        case 1: logger.info("LOG: start ntp update."); break;
-                        case 2: logger.info("LOG: end ntp update.");   break;
-                        case 3: logger.info("LOG: Client Connected .");      break;
-                        case 4: logger.info("LOG: Client Disonnected .");    break;
-                        case 5: logger.info("LOG: Before update values.");   break;
-                        case 6: logger.info("LOG: after update values.");    break;
-                        default: logger.info("unknown log command");
+                    switch (logCommand) {
+                        case 1:
+                            logger.info("LOG: start ntp update.");
+                            break;
+                        case 2:
+                            logger.info("LOG: end ntp update.");
+                            break;
+                        case 3:
+                            logger.info("LOG: Client Connected .");
+                            break;
+                        case 4:
+                            logger.info("LOG: Client Disonnected .");
+                            break;
+                        case 5:
+                            logger.info("LOG: Before update values.");
+                            break;
+                        case 6:
+                            logger.info("LOG: after update values.");
+                            break;
+                        default:
+                            logger.info("unknown log command");
                     }
 
                 } else {
-                    logger.log(Level.SEVERE, "unknown command:"+command);
+                    logger.log(Level.SEVERE, "unknown command:" + command);
                 }
             }
+
             @Override
             public void finishDecode(IoSession session, ProtocolDecoderOutput out) throws Exception {
                 if (logger.isLoggable(Level.FINE)) {
@@ -99,6 +116,7 @@ public class BroadcastProtocolCodecFilter implements ProtocolCodecFactory {
                             .append(".finishDecode[").append(session).append("]").toString());
                 }
             }
+
             @Override
             public void dispose(IoSession session) throws Exception {
                 if (logger.isLoggable(Level.FINE)) {

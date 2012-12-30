@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns="http://maven.apache.org/XDOC/2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
+
+    <properties>
+        <title>List of Material</title>
+        <author email="etienne@spielhuus.org">Etienne</author>
+    </properties>
+    <body>
+        <section name="Material">
+            <p>Material für das Hydroponics Shield. Nicht aufgelistet sind Stecker, Gehäuse und Kabel.</p>
+
+            <table>
+                <tr>
+                    <th>#</th>
+                    <th></th>
+                    <th>Anzahl</th>
+                    <th>Part</th>
+                    <th>Beschreibung</th>
+                </tr>
+                <tr>
+                    <td width="50">1</td>
+                    <td width="100">
+                        <a href="./images/ArduinoEthernet.jpg">
+                            <img alt="" src="./images/ArduinoEthernet_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">1</td>
+                    <td width="50"></td>
+                    <td><a href="http://arduino.cc/en/Main/ArduinoBoardEthernet">Arduino Ethernet</a></td>
+                </tr>
+                <tr>
+                    <td width="50">2</td>
+                    <td width="100">
+                        <a href="./images/dht33.jpg">
+                            <img alt="" src="./images/dht33_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">1</td>
+                    <td width="50"></td>
+                    <td>Temperature Sensor, DHT33 (
+                    <a href="./datasheet/DHT22.pdf">
+                        Datenblatt
+                    </a>)
+                    </td>
+                </tr>
+                <tr>
+                    <td width="50">3</td>
+                    <td width="100">
+                        <a href="./images/sct013.jpg">
+                            <img alt="" src="./images/sct013_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">1</td>
+                    <td width="50"></td>
+                    <td>Berührungsloser Wechselstrom Messwandler 100A max (
+                        <a href="http://www.seeedstudio.com/wiki/index.php?title=Non-invasive_AC_current_sensor_(100A_max)">
+                            SCT 013-000
+                        </a>,
+                        <a href="./datasheet/SCT013-000_datasheet.pdf">
+                            Datenblatt
+                        </a>)
+                    </td>
+                </tr>
+                <tr>
+                    <td width="50">4</td>
+                    <td width="100">
+                        <a href="./images/MoistureSensor.jpg">
+                            <img alt="" src="./images/MoistureSensor_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">1</td>
+                    <td width="50"></td>
+                    <td>Grove - Feuchtigkeits Sensor (
+                        <a href="http://seeedstudio.com/wiki/Grove_-_Moisture_Sensor">
+                            SEN92355P
+                        </a>)
+                        </td>
+                </tr>
+                <tr>
+                    <td width="50">5</td>
+                    <td width="100">
+                            <a href="./images/ph.jpg">
+                            <img alt="" src="./images/ph_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">1</td>
+                    <td width="50"></td>
+                    <td>PH Stamp (
+                        <a href="https://www.atlas-scientific.com/product_pages/embedded/ph-3.html">
+                            Atlas-Scientific
+                        </a>,
+                        <a href="./datasheet/ph_stamp.pdf">Datenblatt</a>)
+                    </td>
+                </tr>
+                <tr>
+                    <td width="50">6</td>
+                    <td width="100">
+                        <a href="./images/platine.jpg">
+                            <img alt="" src="./images/platine_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">1</td>
+                    <td width="50"></td>
+                    <td>Hartpapier Lochraster-Platine</td>
+                </tr>
+                <tr>
+                    <td width="50">7</td>
+                    <td width="100">
+                        <a href="./images/ds1307.jpg">
+                            <img alt="" src="./images/ds1307_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">1</td>
+                    <td width="50">U2</td>
+                    <td>Real time clock	DS1307 (
+                        <a href="./datasheet/DS1307.pdf">
+                            Datenblatt
+                        </a>)
+                    </td>
+                </tr>
+                <tr>
+                    <td width="50">8</td>
+                    <td width="100">
+                        <a href="./images/ULN2003.jpg">
+                            <img alt="" src="./images/ULN2003_small.jpg"/>
+                        </a>
+                        </td>
+                    <td width="50">1</td>
+                    <td width="50">U1</td>
+                    <td> Linear-IC ST Microelectronics ULN 2003 A Gehäuseart DIL 16 Ausführung Driver CMOS/TTL-Eingang (
+                        <a href="./datasheet/ULN2003.pdf">
+                            Datenblatt
+                        </a>)
+                    </td>
+                </tr>
+                <tr>
+                    <td width="50">9</td>
+                    <td width="100">
+                        <a href="./images/releais.jpg">
+                            <img alt="" src="./images/releais_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">6</td>
+                    <td width="50"></td>
+                    <td>RT-Leistungsprintrelais inrush 16 A, 1 x Schließer TE Connectivity RT33K012 12 V/DC 1 Schließer 16 A 250 V/AC/Max. 440 V (504112 - 6)</td>
+                </tr>
+                <tr>
+                    <td width="50">10</td>
+                    <td width="100">
+                        <a href="./images/resistor.jpg">
+                            <img alt="" src="./images/resistor_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">1</td>
+                        <td width="50">R1</td>
+                    <td>Widerstand 33 Ohm</td>
+                </tr>
+                <tr>
+                    <td width="50">11</td>
+                    <td width="100">
+                        <a href="./images/resistor.jpg">
+                            <img alt="" src="./images/resistor_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">3</td>
+                        <td width="50">R2,R3,R4</td>
+                    <td>Widerstand 10 kOhm</td>
+                </tr>
+                <tr>
+                    <td width="50">12</td>
+                    <td width="100">
+                        <a href="./images/capacitator.jpg">
+                            <img alt="" src="./images/capacitator_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">1</td>
+                    <td width="50"> C1</td>
+                    <td>Kondensator 10uF</td>
+                </tr>
+                <tr>
+                    <td width="50">13</td>
+                    <td width="100">
+                        <a href="./images/quarz.jpg">
+                            <img alt="" src="./images/quarz_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">1</td>
+                    <td width="50">Q1</td>
+                    <td>Quartz (32.768KHz)</td>
+                </tr>
+                <tr>
+                    <td width="50">14</td>
+                    <td width="100">
+                        <a href="./images/header.jpg">
+                            <img alt="" src="./images/header_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">4</td>
+                    <td width="50">JP1-4</td>
+                    <td>Stiftleiste RM 2,54, gerade Rastermaß: 2.54 mm (734193 - 62) <br/>
+                        <ul>
+                            <li>2 * 6 Pin</li>
+                            <li>2 * 8 Pin</li>
+                        </ul></td>
+                </tr>
+                <tr>
+                    <td width="50">15</td>
+                    <td width="100">
+                        <a href="./images/steckverbinder.jpg">
+                            <img alt="" src="./images/steckverbinder_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">3</td>
+                    <td width="50">SV1-3</td>
+                    <td>Platinen-Steckverbinder, abgewinkelt Rastermaß: 2.5 (2.54) mm<br/>
+                        <ul>
+                            <li>2 * 8 Pin (743100 - 62)</li>
+                            <li>1 * 5 Pin (743097 - 62)</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="50">16</td>
+                    <td width="100">
+                        <a href="./images/batterienhalter.jpg">
+                            <img alt="" src="./images/batterienhalter_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">2</td>
+                    <td width="50"></td>
+                    <td>Batterienhalter (651201 - 62)</td>
+                </tr>
+                <tr>
+                    <td width="50">17</td>
+                    <td width="100">
+                        <a href="./images/batterie.jpg">
+                            <img alt="" src="./images/batterie_small.jpg"/>
+                        </a>
+                    </td>
+                    <td width="50">2</td>
+                    <td width="50">G1</td>
+                    <td>Batterie (CR1220)</td>
+                </tr>
+            </table>
+        </section>
+    </body>
+</document>

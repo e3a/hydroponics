@@ -53,20 +53,20 @@ public class EditGrow {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public void setupNewForm(@RequestParam(value="growId", required=false) Integer growId, Model model) {
+    public void setupNewForm(@RequestParam(value = "growId", required = false) Integer growId, Model model) {
         logger.info(new StringBuffer("EditGrow: id:").append(growId).toString());
 
         GrowEditBean growEditBean = new GrowEditBean();
 
-        if(growId != null) {
+        if (growId != null) {
             Map<String, Object> grow = hydroponicsDao.getGrowById(growId);
-            growEditBean.setId((Integer)grow.get(Constants.ID));
-            growEditBean.setName((String)grow.get(Constants.NAME));
-            growEditBean.setVegetation((Date)grow.get(Constants.VEGETATION));
-            growEditBean.setFlower((Date)grow.get(Constants.FLOWER_DATE));
-            growEditBean.setEnd((Date)grow.get(Constants.END_DATE));
-            growEditBean.setResult((Integer)grow.get(Constants.RESULT));
-            growEditBean.setPlants((Integer)grow.get(Constants.PLANTS));
+            growEditBean.setId((Integer) grow.get(Constants.ID));
+            growEditBean.setName((String) grow.get(Constants.NAME));
+            growEditBean.setVegetation((Date) grow.get(Constants.VEGETATION));
+            growEditBean.setFlower((Date) grow.get(Constants.FLOWER_DATE));
+            growEditBean.setEnd((Date) grow.get(Constants.END_DATE));
+            growEditBean.setResult((Integer) grow.get(Constants.RESULT));
+            growEditBean.setPlants((Integer) grow.get(Constants.PLANTS));
         }
         model.addAttribute(growEditBean);
     }
@@ -78,7 +78,7 @@ public class EditGrow {
                 .append("\n\tSessionState:").append(status)
                 .append("\n\tFormAction:").append(formAction).toString());
 
-        if(formAction != null && formAction.equals(Constants.ACTION_SUBMIT)) {
+        if (formAction != null && formAction.equals(Constants.ACTION_SUBMIT)) {
             growValidator.validate(growEditBean, result);
             if (result.hasErrors()) {
                 return Constants.PAGE_EDIT_GROW;
@@ -96,15 +96,15 @@ public class EditGrow {
                 status.setComplete();
                 return Constants.REDIRECT_MAIN;
             }
-        } else if(formAction != null && formAction.equals(Constants.ACTION_DELETE)) {
+        } else if (formAction != null && formAction.equals(Constants.ACTION_DELETE)) {
             this.hydroponicsDao.deleteGrow(growEditBean.getId());
             status.setComplete();
             return Constants.REDIRECT_MAIN;
-        } else if(formAction != null && formAction.equals(Constants.ACTION_CANCEL)) {
+        } else if (formAction != null && formAction.equals(Constants.ACTION_CANCEL)) {
             status.setComplete();
             return Constants.REDIRECT_MAIN;
         } else {
-            throw new RuntimeException("unknown form action:"+formAction);
+            throw new RuntimeException("unknown form action:" + formAction);
         }
     }
 }

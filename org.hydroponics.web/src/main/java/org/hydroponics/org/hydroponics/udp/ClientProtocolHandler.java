@@ -27,22 +27,24 @@ public class ClientProtocolHandler extends IoHandlerAdapter {
     private static Logger logger = Logger.getLogger(ClientProtocolHandler.class.getName());
 
     @Override
-    public void exceptionCaught( IoSession session, Throwable cause ) throws Exception {
+    public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
         logger.log(Level.WARNING, new StringBuffer(ClientProtocolHandler.class.getSimpleName())
                 .append(".exception[").append(cause.toString()).append("]").toString(), cause);
         session.close(true);
     }
+
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
-        if(message != null) {
-            byte[] ipBytes = (byte[])message;
+        if (message != null) {
+            byte[] ipBytes = (byte[]) message;
             if (logger.isLoggable(Level.INFO)) {
                 logger.info(new StringBuffer(ClientProtocolHandler.class.getSimpleName())
                         .append(".message:").append(message).toString());
             }
-            System.out.println("message received:"+message);
+            System.out.println("message received:" + message);
         }
     }
+
     @Override
     public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
         if (logger.isLoggable(Level.INFO)) {

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns="http://maven.apache.org/XDOC/2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
+
+    <properties>
+        <title>List of Material</title>
+        <author email="etienne@spielhuus.org">Etienne</author>
+    </properties>
+    <body>
+        <section name="Hydroponics Schema">
+            <p>Elektroschema für das Hydroponics Shield.</p>
+            <a href="images/hydroponics_schema.pdf"><img alt="" src="images/schema_small.png"/></a>
+        </section>
+    </body>
+</document>

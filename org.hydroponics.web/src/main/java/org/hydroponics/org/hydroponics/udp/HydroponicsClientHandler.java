@@ -35,19 +35,25 @@ public class HydroponicsClientHandler {
     private static Logger logger = Logger.getLogger(HydroponicsClientHandler.class.getName());
 
     private BroadcastProtocolHandler broadcastProtocolHandler;
+
     public void setBroadcastProtocolHandler(BroadcastProtocolHandler broadcastProtocolHandler) {
         this.broadcastProtocolHandler = broadcastProtocolHandler;
     }
 
     private IoHandler handler;
+
     public void setHandler(IoHandler handler) {
         this.handler = handler;
     }
+
     private IoFilter codecFilter;
+
     public void setCodecFilter(IoFilter codecFilter) {
         this.codecFilter = codecFilter;
     }
+
     private IoFilter loggingFilter;
+
     public void setLoggingFilter(IoFilter loggingFilter) {
         this.codecFilter = codecFilter;
     }
@@ -63,7 +69,7 @@ public class HydroponicsClientHandler {
             res.setTimeserver((b[1] & 0xFF) + "." + (b[2] & 0xFF) + "." + (b[3] & 0xFF) + "." + (b[4] & 0xFF));
 
             return res;
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             logger.log(Level.SEVERE, ex.toString(), ex);
             throw new RuntimeException(ex.toString());
         }
@@ -74,24 +80,25 @@ public class HydroponicsClientHandler {
             NioSocketConnector connector = new NioSocketConnector();
             byte[] b = request(new byte[]{'?', 'S'}, connector, new InetSocketAddress(broadcastProtocolHandler.getRemoteAddress(), 9997));
             List<Map<String, Object>> res = new ArrayList<Map<String, java.lang.Object>>();
-            for(int i=0; i<b.length; i=i+3) {
+            for (int i = 0; i < b.length; i = i + 3) {
                 Map<String, Object> map = new HashMap<String, Object>();
                 map.put("number", new Integer(b[i]));
-                map.put("mode", new Integer(b[i+1]));
-                map.put("status", new Integer(b[i+2]));
+                map.put("mode", new Integer(b[i + 1]));
+                map.put("status", new Integer(b[i + 2]));
                 res.add(map);
             }
             connector.dispose(true);
             return res;
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             logger.log(Level.SEVERE, ex.toString(), ex);
             throw new RuntimeException(ex.toString());
         }
     }
+
     public SchedulesEditBean getSwitch(int number) {
         try {
             NioSocketConnector connector = new NioSocketConnector();
-            byte[] b = request(new byte[]{'?', (byte)number}, connector, new InetSocketAddress(broadcastProtocolHandler.getRemoteAddress(), 9997));
+            byte[] b = request(new byte[]{'?', (byte) number}, connector, new InetSocketAddress(broadcastProtocolHandler.getRemoteAddress(), 9997));
 
             SchedulesEditBean bean = new SchedulesEditBean();
             bean.setNumber(number);
@@ -99,19 +106,19 @@ public class HydroponicsClientHandler {
             bean.setStatus(new Integer(b[1]));
 
             Collection<Integer> schedules = new ArrayList<Integer>();
-            for(int i=0; i<(int)b[2]; i++) {
-                schedules.add((int)b[3+(i*6)+0]);
-                schedules.add((int)b[3+(i*6)+1]);
-                schedules.add((int)b[3+(i*6)+2]);
-                schedules.add((int)b[3+(i*6)+3]);
-                schedules.add((int)b[3+(i*6)+4]);
-                schedules.add((int)b[3+(i*6)+5]);
+            for (int i = 0; i < (int) b[2]; i++) {
+                schedules.add((int) b[3 + (i * 6) + 0]);
+                schedules.add((int) b[3 + (i * 6) + 1]);
+                schedules.add((int) b[3 + (i * 6) + 2]);
+                schedules.add((int) b[3 + (i * 6) + 3]);
+                schedules.add((int) b[3 + (i * 6) + 4]);
+                schedules.add((int) b[3 + (i * 6) + 5]);
             }
             bean.setSchedules(schedules);
             connector.dispose(true);
 
             return bean;
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             logger.log(Level.SEVERE, ex.toString(), ex);
             throw new RuntimeException(ex.toString());
         }
@@ -121,15 +128,15 @@ public class HydroponicsClientHandler {
         try {
             NioSocketConnector connector = new NioSocketConnector();
             byte[] b = new byte[3 + scheduleEditBean.getSchedules().size()];
-            b[0] = (byte)scheduleEditBean.getNumber();
-            b[1] = (byte)scheduleEditBean.getMode();
-            b[2] = (byte)scheduleEditBean.getSchedules().size();
+            b[0] = (byte) scheduleEditBean.getNumber();
+            b[1] = (byte) scheduleEditBean.getMode();
+            b[2] = (byte) scheduleEditBean.getSchedules().size();
             int counter = 0;
-            for(Integer i : scheduleEditBean.getSchedules()) {
-                b[counter+3] = i.byteValue();
+            for (Integer i : scheduleEditBean.getSchedules()) {
+                b[counter + 3] = i.byteValue();
                 counter += 1;
             }
-            for(int i=0; i<b.length; i++) {
+            for (int i = 0; i < b.length; i++) {
                 System.out.print(b[i]);
                 System.out.print(" ");
             }
@@ -137,7 +144,7 @@ public class HydroponicsClientHandler {
             save(b, connector, new InetSocketAddress(broadcastProtocolHandler.getRemoteAddress(), 9997));
             connector.dispose(true);
 
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             logger.log(Level.SEVERE, ex.toString(), ex);
             throw new RuntimeException(ex.toString());
         }
@@ -149,7 +156,7 @@ public class HydroponicsClientHandler {
             logger.info("connect to:" + address);
 
             connector.getFilterChain().addLast("codec", codecFilter);
-            if(loggingFilter != null) {
+            if (loggingFilter != null) {
                 connector.getFilterChain().addLast("logger", loggingFilter);
             }
             connector.setHandler(handler);
@@ -168,15 +175,15 @@ public class HydroponicsClientHandler {
             final ReadFuture readFuture = session.read();
             readFuture.awaitUninterruptibly();
 
-            if(readFuture.getException() != null) {
-                logger.warning("response ex:"+readFuture.getException());
+            if (readFuture.getException() != null) {
+                logger.warning("response ex:" + readFuture.getException());
             }
 
-            byte[] res = (byte[])readFuture.getMessage();
+            byte[] res = (byte[]) readFuture.getMessage();
 
-            if(logger.isLoggable(Level.INFO)) {
+            if (logger.isLoggable(Level.INFO)) {
                 StringBuffer buffer = new StringBuffer("Response:");
-                for(int i=0; i<res.length; i++) {
+                for (int i = 0; i < res.length; i++) {
                     buffer.append(res[i]);
                     buffer.append(" ");
                 }
@@ -191,13 +198,14 @@ public class HydroponicsClientHandler {
             return null;
         }
     }
+
     private void save(byte[] command, NioSocketConnector connector, SocketAddress address) {
 
         try {
             logger.info("connect to:" + address);
 
             connector.getFilterChain().addLast("codec", codecFilter);
-            if(loggingFilter != null) {
+            if (loggingFilter != null) {
                 connector.getFilterChain().addLast("logger", loggingFilter);
             }
             connector.setHandler(handler);

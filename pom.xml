@@ -2,7 +2,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <properties>
-        <org.hydroponics.site.repository>scpexe://192.168.0.6/home/maven/site/hydroponics</org.hydroponics.site.repository>
+        <org.hydroponics.site.repository>scpexe://192.168.0.6/home/maven/site/hydroponics
+        </org.hydroponics.site.repository>
         <org.spielhuus.repository>scpexe://192.168.0.6/home/maven/repository/</org.spielhuus.repository>
     </properties>
 
@@ -11,7 +12,7 @@
 
     <groupId>org.hydroponics</groupId>
     <artifactId>org.hydroponics</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>pom</packaging>
     <name>org.hydroponics</name>
 
@@ -26,7 +27,9 @@
         <license>
             <name>GPL</name>
             <url>http://www.gnu.org/licenses/gpl.html</url>
-            <comments>The GNU General Public License is a free, copyleft license for software and other kinds of works.</comments>
+            <comments>The GNU General Public License is a free, copyleft license for software and other kinds of
+                works.
+            </comments>
         </license>
     </licenses>
     <reporting>

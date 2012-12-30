@@ -41,13 +41,13 @@ public class ImageServlet extends HttpServlet {
             throws ServletException, java.io.IOException {
 
         Map image = ((Map) req.getAttribute(IMAGE));
-        byte[] bytes = (byte[])image.get(IMAGE_DATA);
+        byte[] bytes = (byte[]) image.get(IMAGE_DATA);
         OutputStream out = new BufferedOutputStream(resp.getOutputStream());
 
         //send image to the browser
         resp.addHeader(VIEW_IMAGE_EXPIRES,
-                (image.get(IMAGE_EXPIRES)==null?VIEW_IMAGE_EXPIRES_DATE:(String)image.get(IMAGE_EXPIRES)));
-        resp.setContentType((String)image.get(IMAGE_MIME_TYPE));
+                (image.get(IMAGE_EXPIRES) == null ? VIEW_IMAGE_EXPIRES_DATE : (String) image.get(IMAGE_EXPIRES)));
+        resp.setContentType((String) image.get(IMAGE_MIME_TYPE));
         resp.setContentLength(bytes.length);
         out.write(bytes);
         out.flush();

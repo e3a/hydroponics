@@ -29,26 +29,26 @@ public class GrowJVT {
     private int result;
 
     public int getVegetationDays() {
-        if(vegetation == null) {
+        if (vegetation == null) {
             return 0;
-        } else if(flower == null) {
+        } else if (flower == null) {
             long delta = System.currentTimeMillis() - vegetation.getTime();
-            return (int)(delta / (24 * 60 * 60 * 1000L));
+            return (int) (delta / (24 * 60 * 60 * 1000L));
         } else {
             long delta = flower.getTime() - vegetation.getTime();
-            return (int)(delta / (24 * 60 * 60 * 1000L));
+            return (int) (delta / (24 * 60 * 60 * 1000L));
         }
     }
 
     public int getFlowerDays() {
-        if(flower == null) {
+        if (flower == null) {
             return 0;
-        } else if(end == null) {
+        } else if (end == null) {
             long delta = System.currentTimeMillis() - vegetation.getTime();
-            return (int)(delta / (24 * 60 * 60 * 1000L));
+            return (int) (delta / (24 * 60 * 60 * 1000L));
         } else {
             long delta = end.getTime() - vegetation.getTime();
-            return (int)(delta / (24 * 60 * 60 * 1000L));
+            return (int) (delta / (24 * 60 * 60 * 1000L));
         }
     }
 

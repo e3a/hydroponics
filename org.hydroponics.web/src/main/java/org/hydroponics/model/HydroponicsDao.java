@@ -28,26 +28,36 @@ import java.util.Map;
 public interface HydroponicsDao {
 
     public SqlRowSet getCalibreList(int grow);
+
     public SqlRowSet getCurrentList(int grow);
+
     public SqlRowSet getMoistureList(int grow);
+
     public SqlRowSet getFertilizerList(int grow);
 
     public Map<String, Object> getCalibre();
 
     public Collection<Map<String, Object>> getGrowList();
+
     public Map<String, Object> getCurrentGrow();
-    
+
     public Map<String, Object> getGrowById(int id);
 
     public void saveGrow(Map<String, Object> grow);
+
     public void deleteGrow(int id);
+
     public void saveCalibre(CalibreEvent calibreEvent);
+
     public void saveFertilizer(FertilizerEditBean fertilizer);
 
     public Map<String, Object> getImageById(int id, String type);
+
     public Collection<Integer> getImages(int grow);
+
     public void saveImage(int grow, MultipartFile image);
 
     public String getSwitchName(int id);
+
     public void saveSwitchName(int id, String name);
 }

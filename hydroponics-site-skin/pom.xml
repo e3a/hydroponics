@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.hydroponics</groupId>
         <artifactId>org.hydroponics</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -13,6 +13,6 @@
     <artifactId>hydroponics-site-skin</artifactId>
     <packaging>jar</packaging>
     <name>hydroponics-site-skin</name>
-    <dependencies />
+    <dependencies/>
 </project>
 

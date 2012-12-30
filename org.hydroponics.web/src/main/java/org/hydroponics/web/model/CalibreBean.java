@@ -11,7 +11,8 @@ public class CalibreBean {
     private int electricity;
     private int result;
 
-    public CalibreBean() {}
+    public CalibreBean() {
+    }
 
     public int getId() {
         return id;
