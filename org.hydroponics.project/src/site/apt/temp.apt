@@ -16,47 +16,17 @@ Humidity and Temperature Sensor
 
 Circuit
 
-[./images/dht22.png] DHT 22
+[./images/temp.png] DHT 22
 
  <<DHT22>> Temperature/Humidity Sensor.
 
  <<R1>> Resistor 10 K\u03A9.
 
 
-Arduino Sketch
-
- 1) Download EmonLib from github and place in your arduino libraries folder.
-
- Download: {{{https://github.com/openenergymonitor/EmonLib}EmonLib}}
-
- 2) Upload the current only example:
-
---------------------------
-#include "EmonLib.h"                   // Include Emon Library
-EnergyMonitor emon1;                   // Create an instance
-
-void setup()
-{
-  Serial.begin(9600);
-
-  emon1.current(1, 111.1);             // Current: input pin, calibration.
-}
-
-void loop()
-{
-  double Irms = emon1.calcIrms(1480);  // Calculate Irms only
-
-  Serial.print(Irms*230.0);	       // Apparent power
-  Serial.print(" ");
-  Serial.println(Irms);		       // Irms
-}
---------------------------
-
 Resources
 
-  [[1]] {1} {{{http://www.seeedstudio.com/wiki/index.php?title=Non-invasive_AC_current_sensor_(100A_max)}Product Site}}
+  [[1]] {1} {{{https://github.com/nethoncho/Arduino-DHT22}Arduino Sketch}}
 
-  [[2]] {2} {{{http://openenergymonitor.org/emon/buildingblocks/ct-sensors-introduction}Reference project}}
 
 
 

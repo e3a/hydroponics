@@ -8882,21 +8882,65 @@ Source: AVX .. aphvc.pdf</description>
 </class>
 </classes>
 <parts>
-<part name="JP1" library="pinhead" deviceset="PINHD-1X8" device="/90"/>
-<part name="JP2" library="pinhead" deviceset="PINHD-1X8" device="/90"/>
-<part name="JP3" library="pinhead" deviceset="PINHD-1X6" device="/90"/>
-<part name="JP4" library="pinhead" deviceset="PINHD-1X6" device="/90"/>
+<part name="JP1" library="pinhead" deviceset="PINHD-1X8" device="/90">
+<attribute name="MF" value=""/>
+<attribute name="MPN" value=""/>
+<attribute name="OC_NEWARK" value="unknown"/>
+</part>
+<part name="JP2" library="pinhead" deviceset="PINHD-1X8" device="/90">
+<attribute name="MF" value=""/>
+<attribute name="MPN" value=""/>
+<attribute name="OC_NEWARK" value="unknown"/>
+</part>
+<part name="JP3" library="pinhead" deviceset="PINHD-1X6" device="/90">
+<attribute name="MF" value=""/>
+<attribute name="MPN" value=""/>
+<attribute name="OC_NEWARK" value="unknown"/>
+</part>
+<part name="JP4" library="pinhead" deviceset="PINHD-1X6" device="/90">
+<attribute name="MF" value=""/>
+<attribute name="MPN" value=""/>
+<attribute name="OC_NEWARK" value="unknown"/>
+</part>
 <part name="SV1" library="con-lsta" deviceset="FE07-1" device=""/>
-<part name="U1" library="ST Microelctronics_By_element14_Batch_1" deviceset="ULN2003A" device=""/>
-<part name="U2" library="Maxim_By_element14_Batch_1" deviceset="DS1307Z+" device=""/>
+<part name="U1" library="ST Microelctronics_By_element14_Batch_1" deviceset="ULN2003A" device="">
+<attribute name="MF" value="Arrow Electronics"/>
+</part>
+<part name="U2" library="Maxim_By_element14_Batch_1" deviceset="DS1307Z+" device="">
+<attribute name="MF" value="DALLAS SEMICONDUCTOR"/>
+</part>
 <part name="Q1" library="crystal" deviceset="CRYSTAL" device="TC38H"/>
 <part name="SV2" library="con-lsta" deviceset="FE08-1" device=""/>
-<part name="R1" library="resistor" deviceset="R-EU_" device="0207/10"/>
-<part name="R2" library="resistor" deviceset="R-EU_" device="0207/10"/>
-<part name="R3" library="resistor" deviceset="R-EU_" device="0207/10"/>
-<part name="R4" library="resistor" deviceset="R-EU_" device="0207/10"/>
-<part name="C1" library="rcl" deviceset="C-EU" device="025-025X050"/>
-<part name="G1" library="battery" deviceset="CR2032H" device=""/>
+<part name="R1" library="resistor" deviceset="R-EU_" device="0207/10">
+<attribute name="MF" value=""/>
+<attribute name="MPN" value=""/>
+<attribute name="OC_NEWARK" value="unknown"/>
+</part>
+<part name="R2" library="resistor" deviceset="R-EU_" device="0207/10">
+<attribute name="MF" value=""/>
+<attribute name="MPN" value=""/>
+<attribute name="OC_NEWARK" value="unknown"/>
+</part>
+<part name="R3" library="resistor" deviceset="R-EU_" device="0207/10">
+<attribute name="MF" value=""/>
+<attribute name="MPN" value=""/>
+<attribute name="OC_NEWARK" value="unknown"/>
+</part>
+<part name="R4" library="resistor" deviceset="R-EU_" device="0207/10">
+<attribute name="MF" value=""/>
+<attribute name="MPN" value=""/>
+<attribute name="OC_NEWARK" value="unknown"/>
+</part>
+<part name="C1" library="rcl" deviceset="C-EU" device="025-025X050">
+<attribute name="MF" value=""/>
+<attribute name="MPN" value=""/>
+<attribute name="OC_NEWARK" value="unknown"/>
+</part>
+<part name="G1" library="battery" deviceset="CR2032H" device="">
+<attribute name="MF" value=""/>
+<attribute name="MPN" value=""/>
+<attribute name="OC_NEWARK" value="unknown"/>
+</part>
 <part name="SV3" library="con-lsta" deviceset="FE05-1" device=""/>
 </parts>
 <sheets>
@@ -8904,21 +8948,65 @@ Source: AVX .. aphvc.pdf</description>
 <plain>
 </plain>
 <instances>
-<instance part="JP1" gate="A" x="-66.04" y="144.78" rot="R90"/>
-<instance part="JP2" gate="A" x="-33.02" y="144.78" rot="R90"/>
-<instance part="JP3" gate="A" x="-78.74" y="27.94" rot="R270"/>
-<instance part="JP4" gate="A" x="-50.8" y="27.94" rot="R270"/>
+<instance part="JP1" gate="A" x="-66.04" y="144.78" rot="R90">
+<attribute name="OC_NEWARK" x="-66.04" y="144.78" size="1.778" layer="96" display="off"/>
+<attribute name="MF" x="-66.04" y="144.78" size="1.778" layer="96" display="off"/>
+<attribute name="MPN" x="-66.04" y="144.78" size="1.778" layer="96" display="off"/>
+</instance>
+<instance part="JP2" gate="A" x="-33.02" y="144.78" rot="R90">
+<attribute name="OC_NEWARK" x="-33.02" y="144.78" size="1.778" layer="96" display="off"/>
+<attribute name="MF" x="-33.02" y="144.78" size="1.778" layer="96" display="off"/>
+<attribute name="MPN" x="-33.02" y="144.78" size="1.778" layer="96" display="off"/>
+</instance>
+<instance part="JP3" gate="A" x="-78.74" y="27.94" rot="R270">
+<attribute name="OC_NEWARK" x="-78.74" y="27.94" size="1.778" layer="96" display="off"/>
+<attribute name="MF" x="-78.74" y="27.94" size="1.778" layer="96" display="off"/>
+<attribute name="MPN" x="-78.74" y="27.94" size="1.778" layer="96" display="off"/>
+</instance>
+<instance part="JP4" gate="A" x="-50.8" y="27.94" rot="R270">
+<attribute name="OC_NEWARK" x="-50.8" y="27.94" size="1.778" layer="96" display="off"/>
+<attribute name="MF" x="-50.8" y="27.94" size="1.778" layer="96" display="off"/>
+<attribute name="MPN" x="-50.8" y="27.94" size="1.778" layer="96" display="off"/>
+</instance>
 <instance part="SV1" gate="G$1" x="73.66" y="96.52" rot="R180"/>
-<instance part="U1" gate="A" x="20.32" y="96.52"/>
-<instance part="U2" gate="A" x="-91.44" y="93.98"/>
+<instance part="U1" gate="A" x="20.32" y="96.52">
+<attribute name="MF" x="20.32" y="96.52" size="1.778" layer="96" display="off"/>
+</instance>
+<instance part="U2" gate="A" x="-91.44" y="93.98">
+<attribute name="MF" x="-91.44" y="93.98" size="1.778" layer="96" display="off"/>
+</instance>
 <instance part="Q1" gate="G$1" x="-91.44" y="111.76"/>
 <instance part="SV2" gate="G$1" x="73.66" y="55.88" rot="R180"/>
-<instance part="R1" gate="G$1" x="-53.34" y="48.26"/>
-<instance part="R2" gate="G$1" x="-66.04" y="38.1"/>
-<instance part="R3" gate="G$1" x="-66.04" y="40.64"/>
-<instance part="R4" gate="G$1" x="-63.5" y="58.42"/>
-<instance part="C1" gate="G$1" x="-66.04" y="45.72" rot="R90"/>
-<instance part="G1" gate="1" x="-93.98" y="63.5" rot="R180"/>
+<instance part="R1" gate="G$1" x="-53.34" y="48.26">
+<attribute name="OC_NEWARK" x="-53.34" y="48.26" size="1.778" layer="96" display="off"/>
+<attribute name="MF" x="-53.34" y="48.26" size="1.778" layer="96" display="off"/>
+<attribute name="MPN" x="-53.34" y="48.26" size="1.778" layer="96" display="off"/>
+</instance>
+<instance part="R2" gate="G$1" x="-66.04" y="38.1">
+<attribute name="OC_NEWARK" x="-66.04" y="38.1" size="1.778" layer="96" display="off"/>
+<attribute name="MF" x="-66.04" y="38.1" size="1.778" layer="96" display="off"/>
+<attribute name="MPN" x="-66.04" y="38.1" size="1.778" layer="96" display="off"/>
+</instance>
+<instance part="R3" gate="G$1" x="-66.04" y="40.64">
+<attribute name="OC_NEWARK" x="-66.04" y="40.64" size="1.778" layer="96" display="off"/>
+<attribute name="MF" x="-66.04" y="40.64" size="1.778" layer="96" display="off"/>
+<attribute name="MPN" x="-66.04" y="40.64" size="1.778" layer="96" display="off"/>
+</instance>
+<instance part="R4" gate="G$1" x="-63.5" y="58.42">
+<attribute name="OC_NEWARK" x="-63.5" y="58.42" size="1.778" layer="96" display="off"/>
+<attribute name="MF" x="-63.5" y="58.42" size="1.778" layer="96" display="off"/>
+<attribute name="MPN" x="-63.5" y="58.42" size="1.778" layer="96" display="off"/>
+</instance>
+<instance part="C1" gate="G$1" x="-66.04" y="45.72" rot="R90">
+<attribute name="OC_NEWARK" x="-66.04" y="45.72" size="1.778" layer="96" display="off"/>
+<attribute name="MF" x="-66.04" y="45.72" size="1.778" layer="96" display="off"/>
+<attribute name="MPN" x="-66.04" y="45.72" size="1.778" layer="96" display="off"/>
+</instance>
+<instance part="G1" gate="1" x="-93.98" y="63.5" rot="R180">
+<attribute name="OC_NEWARK" x="-93.98" y="63.5" size="1.778" layer="96" display="off"/>
+<attribute name="MF" x="-93.98" y="63.5" size="1.778" layer="96" display="off"/>
+<attribute name="MPN" x="-93.98" y="63.5" size="1.778" layer="96" display="off"/>
+</instance>
 <instance part="SV3" gate="G$1" x="-149.86" y="129.54"/>
 </instances>
 <busses>
