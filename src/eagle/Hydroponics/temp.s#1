@@ -3250,10 +3250,15 @@ In this library the device names are the same as the pin names of the symbols, t
 <attribute name="MF" x="-7.62" y="93.98" size="1.778" layer="96" rot="R180" display="off"/>
 <attribute name="MPN" x="-7.62" y="93.98" size="1.778" layer="96" rot="R180" display="off"/>
 </instance>
-<instance part="DHT22" gate="G$1" x="-20.32" y="109.22" rot="R270">
+<instance part="DHT22" gate="G$1" x="-20.32" y="109.22" smashed="yes" rot="R270">
 <attribute name="OC_NEWARK" x="-20.32" y="109.22" size="1.778" layer="96" rot="R180" display="off"/>
 <attribute name="MF" x="-20.32" y="109.22" size="1.778" layer="96" rot="R180" display="off"/>
 <attribute name="MPN" x="-20.32" y="109.22" size="1.778" layer="96" rot="R180" display="off"/>
+<attribute name="PART" x="-16.51" y="120.65" size="1.778" layer="95" rot="R180"/>
+<attribute name="VALUE" x="-20.32" y="115.57" size="1.778" layer="96" rot="R270"/>
+<attribute name="FUNKTION" x="-22.86" y="115.57" size="1.778" layer="96" rot="R270"/>
+<attribute name="TYPE" x="-21.59" y="118.11" size="1.778" layer="96" rot="R90"/>
+<attribute name="HERSTELLER" x="-24.13" y="118.11" size="1.778" layer="96" rot="R90"/>
 </instance>
 <instance part="SUPPLY1" gate="G$1" x="5.08" y="104.14" smashed="yes" rot="R90">
 <attribute name="VALUE" x="14.859" y="104.775" size="1.778" layer="96" rot="R180"/>
