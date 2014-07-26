@@ -15,11 +15,11 @@
     </mvc:annotation-driven>
     <mvc:resources mapping="/resources/**" location="/resources/" cache-period="31556926"/>
 
-    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <!-- bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="location">
             <value>file:etc/hydroponics.properties</value>
         </property>
-    </bean>
+    </bean--> 
 
     <bean id="jsontemplate" class="org.springframework.web.servlet.view.json.MappingJacksonJsonView"/>
 
@@ -40,7 +40,7 @@
     </bean>
 
     <!-- Start database configuration -->
-    <bean id="DataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <!-- bean id="DataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
         <property name="url" value="${org.hydrophonics.database.uri}"/>
         <property name="username" value="${org.hydrophonics.database.user}"/>
@@ -51,7 +51,12 @@
         <property name="testOnBorrow">
             <value>true</value>
         </property>
+    </bean -->
+    <bean id="DataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName" value="java:comp/env/jdbc/hydroponics"/>
+        <property name="resourceRef" value="true" />
     </bean>
+
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
         <property name="dataSource" ref="DataSource"/>
     </bean>

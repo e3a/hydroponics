@@ -53,7 +53,7 @@ public class JDBCHydroponicsDaoImpl implements HydroponicsDao, InitializingBean 
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        //executeScript(JDBCHydroponicsDaoImpl.class.getResourceAsStream("/org/hydroponics/dao/create-database.sql"));
+        executeScript(JDBCHydroponicsDaoImpl.class.getResourceAsStream("/org/hydroponics/dao/create-database.sql"));
     }
 
     private void executeScript(InputStream inputStream) {
